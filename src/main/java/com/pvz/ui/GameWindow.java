@@ -44,9 +44,13 @@ public class GameWindow {
         VBox bottomPanel = createBottomPanel();
         root.setBottom(bottomPanel);
 
-        Scene scene = new Scene(root, 1000, 700);
+        Scene scene = new Scene(root, 800, 600);
         primaryStage.setTitle("Plants vs Zombies");
         primaryStage.setScene(scene);
+        
+        // Maximize window to hide taskbar
+        primaryStage.setMaximized(true);
+        primaryStage.setResizable(true);
 
         // Start game loop
         startGameLoop();

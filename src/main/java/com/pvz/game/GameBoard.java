@@ -11,6 +11,7 @@ public class GameBoard {
     private List<Plant> plants;
     private List<Zombie> zombies;
     private List<Pea> projectiles;
+    private List<Sun> suns;
     private int score;
     private int sun;
     private boolean gameOver;
@@ -19,11 +20,14 @@ public class GameBoard {
     private int wavesCleared;
     private long lastZombieSpawnTime;
     private long zombieSpawnInterval = 3000; // milliseconds
+    private long lastSunSpawnTime;
+    private long sunSpawnInterval = 5000; // milliseconds
 
     public GameBoard() {
         plants = new ArrayList<>();
         zombies = new ArrayList<>();
         projectiles = new ArrayList<>();
+        suns = new ArrayList<>();
         score = 0;
         sun = 100; // Starting sun
         gameOver = false;
@@ -31,6 +35,7 @@ public class GameBoard {
         wave = 1;
         wavesCleared = 0;
         lastZombieSpawnTime = System.currentTimeMillis();
+        lastSunSpawnTime = System.currentTimeMillis();
     }
 
     public boolean plantAt(Plant plant, int gridX, int gridY) {
@@ -67,12 +72,41 @@ public class GameBoard {
         projectiles.add(pea);
     }
 
+    public boolean collectSunAt(double x, double y) {
+        for (Sun s : suns) {
+            if (s.getX() <= x && x <= s.getX() + s.getWidth() &&
+                s.getY() <= y && y <= s.getY() + s.getHeight()) {
+                sun += s.getValue();
+                s.setAlive(false);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void update() {
         if (gameOver) return;
 
-        // Update plants
+        // Update plants and make them shoot
         for (Plant plant : plants) {
             plant.update();
+            
+            // Peashooter shoots at zombies
+            if (plant instanceof Peashooter && plant.canAction()) {
+                Zombie target = findNearestZombie(plant);
+                if (target != null) {
+                    // Create pea and shoot it
+                    Pea pea = new Pea(plant.getX() + plant.getWidth(), plant.getY() + plant.getHeight() / 2);
+                    projectiles.add(pea);
+                    plant.action();
+                }
+            }
+            
+            // Sunflower produces sun
+            if (plant instanceof Sunflower && plant.canAction()) {
+                suns.add(new Sun(plant.getX() + plant.getWidth()/2 - 10, plant.getY() - 20));
+                plant.action();
+            }
         }
 
         // Update zombies
@@ -80,15 +114,28 @@ public class GameBoard {
             zombie.update();
         }
 
+        // Update suns
+        for (Sun s : suns) {
+            s.update();
+        }
+
+        // Spawn suns periodically
+        if (System.currentTimeMillis() - lastSunSpawnTime > sunSpawnInterval) {
+            spawnSun();
+            lastSunSpawnTime = System.currentTimeMillis();
+        }
+
         // Update projectiles
         for (Pea pea : projectiles) {
             pea.update();
         }
 
-        // Spawn zombies based on wave
-        if (System.currentTimeMillis() - lastZombieSpawnTime > zombieSpawnInterval && 
-            zombies.size() < (2 + wave)) {
-            spawnZombie();
+        // Spawn zombies - always try to maintain zombie count
+        if (System.currentTimeMillis() - lastZombieSpawnTime > zombieSpawnInterval) {
+            int maxZombies = 2 + (wave * 2);
+            if (zombies.size() < maxZombies) {
+                spawnZombie();
+            }
             lastZombieSpawnTime = System.currentTimeMillis();
         }
 
@@ -102,6 +149,7 @@ public class GameBoard {
         plants.removeIf(p -> !p.isAlive());
         zombies.removeIf(z -> !z.isAlive());
         projectiles.removeIf(p -> !p.isAlive());
+        suns.removeIf(s -> !s.isAlive());
 
         // Check win/lose conditions
         if (zombies.isEmpty() && wave >= 3) {
@@ -116,7 +164,28 @@ public class GameBoard {
 
     private void spawnZombie() {
         int lane = (int) (Math.random() * GRID_HEIGHT);
-        zombies.add(new BasicZombie(1000, lane * CELL_SIZE + 10));
+        zombies.add(new BasicZombie(720, lane * CELL_SIZE + 10));
+    }
+
+    private void spawnSun() {
+        double x = Math.random() * (GRID_WIDTH * CELL_SIZE - 20);
+        suns.add(new Sun(x, 0));
+    }
+    
+    private Zombie findNearestZombie(Plant plant) {
+        Zombie nearest = null;
+        double minDist = Double.MAX_VALUE;
+        
+        for (Zombie zombie : zombies) {
+            if (zombie.getY() == plant.getY() || Math.abs(zombie.getY() - plant.getY()) < 30) {
+                double dist = Math.abs(zombie.getX() - plant.getX());
+                if (dist < minDist && zombie.getX() > plant.getX()) {
+                    minDist = dist;
+                    nearest = zombie;
+                }
+            }
+        }
+        return nearest;
     }
 
     private void checkProjectileCollisions() {
@@ -152,6 +221,7 @@ public class GameBoard {
     public List<Plant> getPlants() { return new ArrayList<>(plants); }
     public List<Zombie> getZombies() { return new ArrayList<>(zombies); }
     public List<Pea> getProjectiles() { return new ArrayList<>(projectiles); }
+    public List<Sun> getSuns() { return new ArrayList<>(suns); }
     public int getScore() { return score; }
     public int getSun() { return sun; }
     public boolean isGameOver() { return gameOver; }
