@@ -48,9 +48,9 @@ public class GameWindow {
         primaryStage.setTitle("Plants vs Zombies");
         primaryStage.setScene(scene);
         
-        // Maximize window to hide taskbar
-        primaryStage.setMaximized(true);
-        primaryStage.setResizable(true);
+        // Set to fullscreen to hide taskbar
+        primaryStage.setFullScreen(true);
+        primaryStage.setResizable(false);
 
         // Start game loop
         startGameLoop();

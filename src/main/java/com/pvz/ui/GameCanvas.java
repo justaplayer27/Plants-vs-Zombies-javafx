@@ -48,6 +48,11 @@ public class GameCanvas extends Canvas {
             drawPea(pea);
         }
 
+        // Draw suns
+        for (Sun sun : gameBoard.getSuns()) {
+            drawSun(sun);
+        }
+
         // Draw selected plant preview if mouse is over board
         if (selectedPlant != null) {
             drawSelectedPlantPreview();
@@ -103,6 +108,25 @@ public class GameCanvas extends Canvas {
         gc.fillOval(pea.getX(), pea.getY(), pea.getWidth(), pea.getHeight());
     }
 
+    private void drawSun(Sun sun) {
+        gc.setFill(Color.GOLD);
+        gc.fillOval(sun.getX(), sun.getY(), sun.getWidth(), sun.getHeight());
+        // Draw sun rays
+        gc.setStroke(Color.ORANGE);
+        gc.setLineWidth(2);
+        double centerX = sun.getX() + sun.getWidth() / 2;
+        double centerY = sun.getY() + sun.getHeight() / 2;
+        double radius = sun.getWidth() / 2;
+        for (int i = 0; i < 8; i++) {
+            double angle = (Math.PI / 4) * i;
+            double x1 = centerX + radius * Math.cos(angle);
+            double y1 = centerY + radius * Math.sin(angle);
+            double x2 = centerX + (radius + 5) * Math.cos(angle);
+            double y2 = centerY + (radius + 5) * Math.sin(angle);
+            gc.strokeLine(x1, y1, x2, y2);
+        }
+    }
+
     private void drawHealthBar(Entity entity) {
         int maxHealth = 30; // Approximate max health for display
         if (entity instanceof Peashooter) maxHealth = Peashooter.HEALTH;
@@ -127,17 +151,22 @@ public class GameCanvas extends Canvas {
     }
 
     private void handleMouseClick(MouseEvent event) {
-        if (selectedPlant == null) return;
-
         int cellSize = GameBoard.getCellSize();
         int gridX = (int) (event.getX() / cellSize);
         int gridY = (int) (event.getY() / cellSize);
 
         if (event.getButton() == MouseButton.PRIMARY) {
-            // Place plant
-            Plant newPlant = createPlantCopy(selectedPlant);
-            if (gameBoard.plantAt(newPlant, gridX, gridY)) {
-                // Plant placed successfully
+            // First, try to collect sun
+            if (gameBoard.collectSunAt(event.getX(), event.getY())) {
+                return;
+            }
+
+            // Then, place plant if no sun collected
+            if (selectedPlant != null) {
+                Plant newPlant = createPlantCopy(selectedPlant);
+                if (gameBoard.plantAt(newPlant, gridX, gridY)) {
+                    // Plant placed successfully
+                }
             }
         } else if (event.getButton() == MouseButton.SECONDARY) {
             // Remove plant (not implemented yet)
