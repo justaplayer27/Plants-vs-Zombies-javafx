@@ -8,6 +8,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.geometry.Insets;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import com.pvz.game.GameBoard;
 import com.pvz.entities.*;
 
@@ -19,7 +21,9 @@ public class GameWindow {
     private Label scoreLabel;
     private Label waveLabel;
     private Button pauseButton;
+    private Button fullscreenButton;
     private boolean isPaused;
+    private boolean isFullscreen = true;
 
     public GameWindow(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -47,10 +51,14 @@ public class GameWindow {
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setTitle("Plants vs Zombies");
         primaryStage.setScene(scene);
+        scene.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                toggleFullscreen();
+            }
+        });
         
-        // Set to fullscreen to hide taskbar
-        primaryStage.setFullScreen(true);
-        primaryStage.setResizable(false);
+        primaryStage.setFullScreen(isFullscreen);
+        primaryStage.setResizable(true);
 
         // Start game loop
         startGameLoop();
@@ -74,7 +82,11 @@ public class GameWindow {
         pauseButton.setStyle("-fx-font-size: 14;");
         pauseButton.setOnAction(e -> togglePause());
 
-        topPanel.getChildren().addAll(sunLabel, scoreLabel, waveLabel, pauseButton);
+        fullscreenButton = new Button("Fullscreen");
+        fullscreenButton.setStyle("-fx-font-size: 14;");
+        fullscreenButton.setOnAction(e -> toggleFullscreen());
+
+        topPanel.getChildren().addAll(sunLabel, scoreLabel, waveLabel, pauseButton, fullscreenButton);
         return topPanel;
     }
 
@@ -104,6 +116,12 @@ public class GameWindow {
     private void togglePause() {
         isPaused = !isPaused;
         pauseButton.setText(isPaused ? "Resume" : "Pause");
+    }
+
+    private void toggleFullscreen() {
+        isFullscreen = !isFullscreen;
+        primaryStage.setFullScreen(isFullscreen);
+        fullscreenButton.setText(isFullscreen ? "Windowed" : "Fullscreen");
     }
 
     private void startGameLoop() {
@@ -149,6 +167,7 @@ public class GameWindow {
         javafx.application.Platform.runLater(() -> {
             sunLabel.setText("Sun: " + gameBoard.getSun());
             scoreLabel.setText("Score: " + gameBoard.getScore());
+            // Enhanced wave display - assumes GameBoard exposes more info later
             waveLabel.setText("Wave: " + gameBoard.getWave());
         });
     }
@@ -156,4 +175,5 @@ public class GameWindow {
     public void show() {
         primaryStage.show();
     }
+    
 }

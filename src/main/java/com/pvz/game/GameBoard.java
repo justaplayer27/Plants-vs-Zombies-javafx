@@ -18,10 +18,15 @@ public class GameBoard {
     private boolean playerWon;
     private int wave;
     private int wavesCleared;
+    private boolean waveActive = true;
+    private int spawnedThisWave = 0;
+    private int targetZombiesPerWave;
+    private long waveClearTime = -1;
+    private static final long WAVE_DELAY = 10000; // 10 seconds between waves
     private long lastZombieSpawnTime;
-    private long zombieSpawnInterval = 3000; // milliseconds
+    private long zombieSpawnInterval = 3000; // inter-spawn within wave
     private long lastSunSpawnTime;
-    private long sunSpawnInterval = 5000; // milliseconds
+    private long sunSpawnInterval = 12000;
 
     public GameBoard() {
         plants = new ArrayList<>();
@@ -33,6 +38,9 @@ public class GameBoard {
         gameOver = false;
         playerWon = false;
         wave = 1;
+        targetZombiesPerWave = 8; // Starting target
+        waveActive = true;
+        spawnedThisWave = 0;
         wavesCleared = 0;
         lastZombieSpawnTime = System.currentTimeMillis();
         lastSunSpawnTime = System.currentTimeMillis();
@@ -104,7 +112,10 @@ public class GameBoard {
             
             // Sunflower produces sun
             if (plant instanceof Sunflower && plant.canAction()) {
-                suns.add(new Sun(plant.getX() + plant.getWidth()/2 - 10, plant.getY() - 20));
+                // Sun drops exactly at plant center, falls ~90px to row bottom position
+                double sunX = plant.getX() + plant.getWidth() / 2 - 15; // Center, -15 for 30px sun
+                double sunY = plant.getY() + plant.getHeight() / 2 - 15; // Start at plant center
+                suns.add(new Sun(sunX, sunY, true)); // true = fromPlant, falls ~90px
                 plant.action();
             }
         }
@@ -112,6 +123,16 @@ public class GameBoard {
         // Update zombies
         for (Zombie zombie : zombies) {
             zombie.update();
+            
+            // Kiểm tra va chạm với cây - bắt đầu ăn nếu chạm cây
+            if (!zombie.isEating()) {
+                for (Plant plant : plants) {
+                    if (plant.isAlive() && zombie.intersects(plant)) {
+                        zombie.startEating(plant);
+                        break;
+                    }
+                }
+            }
         }
 
         // Update suns
@@ -130,13 +151,35 @@ public class GameBoard {
             pea.update();
         }
 
-        // Spawn zombies - always try to maintain zombie count
-        if (System.currentTimeMillis() - lastZombieSpawnTime > zombieSpawnInterval) {
-            int maxZombies = 2 + (wave * 2);
-            if (zombies.size() < maxZombies) {
-                spawnZombie();
+        // Fixed wave-based zombie spawning
+        long now = System.currentTimeMillis();
+        
+        // Check if current wave cleared
+        if (zombies.isEmpty() && waveActive && spawnedThisWave >= targetZombiesPerWave) {
+            waveClearTime = now;
+            waveActive = false;
+        }
+        
+        // Start next wave after delay (or first wave)
+        if (!waveActive && (waveClearTime == -1 || now - waveClearTime > WAVE_DELAY)) {
+            if (wave >= 2) {
+                playerWon = true;
+                gameOver = true;
+                return;
             }
-            lastZombieSpawnTime = System.currentTimeMillis();
+            wave++;
+            targetZombiesPerWave = 8 + (wave * 3); // Increase difficulty
+            spawnedThisWave = 0;
+            waveActive = true;
+            waveClearTime = -1;
+        }
+        
+        // Spawn within active wave
+        if (waveActive && spawnedThisWave < targetZombiesPerWave && 
+            now - lastZombieSpawnTime > 2500) {  // Sequential spawn every 2.5s
+            spawnZombie();
+            spawnedThisWave++;
+            lastZombieSpawnTime = now;
         }
 
         // Check collisions (projectiles hitting zombies)
@@ -151,12 +194,7 @@ public class GameBoard {
         projectiles.removeIf(p -> !p.isAlive());
         suns.removeIf(s -> !s.isAlive());
 
-        // Check win/lose conditions
-        if (zombies.isEmpty() && wave >= 3) {
-            playerWon = true;
-            gameOver = true;
-        }
-
+        // Check win/lose conditions (handled in spawn logic for waves)
         if (zombies.stream().anyMatch(z -> z.getX() < 50)) {
             gameOver = true;
         }
