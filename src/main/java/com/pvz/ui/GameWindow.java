@@ -45,7 +45,7 @@ public class GameWindow {
     private GameCanvas gameCanvas;
     private Label sunLabel;
     private Label waveLabel;
-    private Button pauseButton;
+private Button pauseButton;
     private boolean isPaused;
     private VBox specialHealthVBox;
     private LevelConfig levelConfig;
@@ -64,6 +64,9 @@ public class GameWindow {
     private Button unlockInfoBtn;
     private StackPane idCardOverlay;
     private VBox idCardContent;
+    
+    private Button freePlantBtn;
+    private boolean isFreePlantMode = false;
 
     public GameWindow(Stage primaryStage, LevelConfig config) {
         this.primaryStage = primaryStage;
@@ -136,9 +139,9 @@ public class GameWindow {
         overlayStatusLabel.setFont(Font.font(gameFont.getFamily(), 40));
         overlayStatusLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
 
-        overlayResumeBtn = new Button("Resume");
+overlayResumeBtn = new Button("Resume");
         overlayResumeBtn.setFont(Font.font(gameFont.getFamily(), 18));
-        overlayResumeBtn.setStyle("-fx-min-width: 150;");
+        overlayResumeBtn.setStyle("-fx-min-width: 150; -fx-background-color: #000000; -fx-text-fill: white;");
         overlayResumeBtn.setOnAction(e -> togglePause());
 
         overlayRestartBtn = new Button("Restart");
@@ -229,10 +232,18 @@ public class GameWindow {
         waveLabel.setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
         leftPanel.getChildren().addAll(sunContainer, waveLabel);
 
-        pauseButton = new Button("||");
+pauseButton = new Button("||");
         pauseButton.setFont(Font.font(gameFont.getFamily(), 16));
-        pauseButton.setStyle("-fx-font-weight: bold; -fx-min-width: 40;");
+        pauseButton.setStyle("-fx-font-weight: bold; -fx-min-width: 40; -fx-background-color: #000000; -fx-text-fill: white;");
         pauseButton.setOnAction(e -> togglePause());
+
+// Free Plant button (for custom/test levels)
+        freePlantBtn = new Button("Free plant mode: OFF");
+        freePlantBtn.setFont(Font.font(gameFont.getFamily(), 14));
+        freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160;");
+        freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160; " +
+                             "-fx-font-family: '" + gameFont.getFamily() + "'; -fx-font-size: 14;");
+        freePlantBtn.setOnAction(e -> toggleFreePlantMode());
 
         Button shovelBtn = new Button();
         ImageView shovelIcon = loadButtonGraphic("/111px-Shovel2.png", 35, 35);
@@ -268,7 +279,7 @@ public class GameWindow {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        topPanel.getChildren().addAll(leftPanel, notificationBtn, spacer, shovelBtn, pauseButton);
+topPanel.getChildren().addAll(leftPanel, notificationBtn, spacer, shovelBtn, freePlantBtn, pauseButton);
         return topPanel;
     }
 
@@ -685,8 +696,25 @@ public class GameWindow {
         waveLabel.setText("Wave: " + gameBoard.getWave());
     }
 
-    private void toggleFullscreen() {
+private void toggleFullscreen() {
         primaryStage.setFullScreen(!primaryStage.isFullScreen());
+    }
+    
+private void toggleFreePlantMode() {
+        isFreePlantMode = !isFreePlantMode;
+        if (isFreePlantMode) {
+            freePlantBtn.setText("Free plant mode: ON");
+            freePlantBtn.setStyle("-fx-background-color: #00ff00; -fx-text-fill: black; -fx-font-weight: bold; -fx-min-width: 160;");
+            freePlantBtn.setStyle("-fx-background-color: #00ff00; -fx-text-fill: black; -fx-font-weight: bold; -fx-min-width: 160; " +
+                                 "-fx-font-family: '" + gameFont.getFamily() + "'; -fx-font-size: 14;");
+            gameBoard.setFreePlantMode(true);
+        } else {
+            freePlantBtn.setText("Free plant mode: OFF");
+            freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160;");
+            freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160; " +
+                                 "-fx-font-family: '" + gameFont.getFamily() + "'; -fx-font-size: 14;");
+            gameBoard.setFreePlantMode(false);
+        }
     }
 
     public void show() {

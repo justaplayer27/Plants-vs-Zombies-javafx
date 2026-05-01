@@ -24,15 +24,6 @@ import com.pvz.entities.SpikeWeed;
 import com.pvz.entities.KernelPult;
 import com.pvz.entities.BonkChoy;
 import com.pvz.entities.zombies.*;
-import javax.imageio.ImageIO;
-import java.util.HashMap;
-import java.util.Map;
-import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.ImageInputStream;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import java.util.Iterator;
 
 public class GameCanvas extends Canvas {
     private GameBoard gameBoard;
@@ -51,24 +42,44 @@ public class GameCanvas extends Canvas {
     private Image butterImage;
     private Image butterOverlayImage;
     private Image sunImage;
-    private Image chickenImage;
+    private Image chickenIdle;
     private Image chickenDeath;
-    private Image sunflowerIdle;
     private Image shovelImage;
+    
+    // Plant specific images
+    private Image peashooterIdle;
+    private Image peashooterAction;
+    private Image sunflowerIdle;
     private Image sunflowerProduce;
+    private Image wallnutIdle;
+    private Image wallnutDegrade1;
+    private Image wallnutDegrade3;
+    private Image spikeWeedIdle;
+    private Image spikeWeedAction;
+    private Image kernelPultIdle;
+    private Image kernelPultAction;
+    private Image bonkChoyIdle;
     private Image bonkChoyAttackFront;
     private Image bonkChoyFinisherFront;
     private Image bonkChoyAttackBack;
     private Image bonkChoyFinisherBack;
-    private Image wallnutDegrade1;
-    private Image wallnutDegrade3;
+
+    // Zombie specific images
+    private Image basicZombieIdle;
+    private Image basicZombieEating;
+    private Image flagZombieIdle;
+    private Image flagZombieEating;
     private Image allStarTackle;
     private Image allStarWalking;
     private Image allStarKick;
     private Image chickenWranglerNoChickens;
     private Image bonkChoyAttack2;
     private Image allStarRunning;
-    private Image basicZombieIdle;
+    private Image chickenWranglerIdle;
+    private Image chickenWranglerEating;
+    private Image chickenWranglerReleasing;
+    private Image excavatorIdle;
+    private Image excavatorEating;
     private Image basicZombieDeath;
     private Image basicZombieDeathAnim;
     private Image allStarZombieDeath;
@@ -80,10 +91,6 @@ public class GameCanvas extends Canvas {
     private Image pharaohWalkingNoArmor;
     private Image pharaohEatingNoArmor;
     private Image pharaohDeath;
-    private Map<String, Image> plantIdleImages;
-    private Map<String, Image> plantActionImages;
-    private Map<String, Image> zombieIdleImages;
-    private Map<String, Image> zombieActionImages;
     private double gridOffsetX = 0;
     private double gridOffsetY = 0;
     private final String[] debugZombies = {"BasicZombie", "PharaohZombie", "FlagZombie", "AllStarZombie", "ExcavatorZombie", "ChickenWranglerZombie"};
@@ -112,48 +119,43 @@ public class GameCanvas extends Canvas {
             System.err.println("Could not load backyard image: " + e.getMessage());
         }
 
-        plantIdleImages = new HashMap<>();
-        plantActionImages = new HashMap<>();
-        zombieIdleImages = new HashMap<>();
-        zombieActionImages = new HashMap<>();
-
         try {
-            sunflowerProduce = loadImage("/Mobile - Plants vs. Zombies 2 - Sunflower - Sun Produce.gif", 110, 132);
+            peashooterIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Peashooter - Idle.gif", 100, 120);
+            peashooterAction = loadImage("/Mobile - Plants vs. Zombies 2 - Peashooter - Attack.gif", 100, 120);
+            
             sunflowerIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Sunflower - Idle.gif", 100, 120);
-
-            plantIdleImages.put("Peashooter", loadImage("/Mobile - Plants vs. Zombies 2 - Peashooter - Idle.gif", 100, 120));
-            plantActionImages.put("Peashooter", loadImage("/Mobile - Plants vs. Zombies 2 - Peashooter - Attack.gif", 100, 120));
-            plantIdleImages.put("Wallnut", loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle.gif", 120, 120));
-            plantIdleImages.put("SpikeWeed", loadImage("/Mobile - Plants vs. Zombies 2 - Spikeweed - Idle - 2.gif", 100, 100));
-            plantActionImages.put("SpikeWeed", loadImage("/Mobile - Plants vs. Zombies 2 - Spikeweed - Attack.gif", 100, 100));
-            plantIdleImages.put("KernelPult", loadImage("/Mobile - Plants vs. Zombies 2 - Kernel-pult - Idle.gif", 110, 130));
-            plantActionImages.put("KernelPult", loadImage("/Mobile - Plants vs. Zombies 2 - Kernel-pult - Attack.gif", 150, 177));
-            plantIdleImages.put("BonkChoy", loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Idle - 2.gif", 110, 130));
+            sunflowerProduce = loadImage("/Mobile - Plants vs. Zombies 2 - Sunflower - Sun Produce.gif", 110, 132);
+            
+            wallnutIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle.gif", 120, 120);
+            wallnutDegrade1 = loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle - Degrade 1.gif", 120, 120);
+            wallnutDegrade3 = loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle - Degrade 3.gif", 120, 120);
+            
+            spikeWeedIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Spikeweed - Idle - 2.gif", 100, 100);
+            spikeWeedAction = loadImage("/Mobile - Plants vs. Zombies 2 - Spikeweed - Attack.gif", 100, 100);
+            
+            kernelPultIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Kernel-pult - Idle.gif", 110, 130);
+            kernelPultAction = loadImage("/Mobile - Plants vs. Zombies 2 - Kernel-pult - Attack.gif", 150, 177);
+            
+            bonkChoyIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Idle - 2.gif", 110, 130);
             bonkChoyAttackFront = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack.gif", 150, 130);
             bonkChoyFinisherFront = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack - 4.gif", 150, 130);
             bonkChoyAttackBack = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack - 2.gif", 150, 130);
             bonkChoyFinisherBack = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack - 5.gif", 150, 130);
-            plantIdleImages.put("Sunflower", sunflowerIdle);
-            plantActionImages.put("Sunflower", sunflowerProduce);
-            wallnutDegrade1 = loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle - Degrade 1.gif", 120, 120);
-            wallnutDegrade3 = loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle - Degrade 3.gif", 120, 120);
 
             basicZombieIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking.gif", 200, 216);
-            zombieIdleImages.put("BasicZombie", basicZombieIdle);
-            zombieActionImages.put("BasicZombie_Eating", loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Eating.gif", 168, 216));
-            zombieIdleImages.put("FlagZombie", loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking - Flag Zombie.gif", 182, 234));
-            zombieActionImages.put("FlagZombie_Eating", loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Eating - Flag Zombie.gif", 182, 234));
-            zombieIdleImages.put("AllStarZombie", loadImage("/Mobile - Plants vs. Zombies 2 - All-Star Zombie - Walking.gif", 270, 390));
+            basicZombieEating = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Eating.gif", 168, 216);
+            flagZombieIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking - Flag Zombie.gif", 182, 234);
+            flagZombieEating = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Eating - Flag Zombie.gif", 182, 234);
             allStarRunning = loadImage("/Mobile - Plants vs. Zombies 2 - All-Star Zombie - Running.gif", 270, 390);
             allStarTackle = loadImage("/Mobile - Plants vs. Zombies 2 - All-Star Zombie - Tackle.gif", 270, 390);
             allStarKick = loadImage("/Mobile - Plants vs. Zombies 2 - All-Star Zombie - Kick.gif", 270, 390);
             allStarWalking = loadImage("/Mobile - Plants vs. Zombies 2 - All-Star Zombie - Walking.gif", 270, 390);
-            zombieIdleImages.put("ChickenWranglerZombie", loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Walking.gif", 168, 216));
-            zombieActionImages.put("ChickenWranglerZombie_Eating", loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Eating.gif", 168, 216));
-            zombieActionImages.put("ChickenWranglerZombie_Releasing", loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Plague Pharmacy - Without Chickens - Battle (Chinese Only - Removed).gif", 175, 225));
-            zombieIdleImages.put("ExcavatorZombie", loadImage("/Mobile - Plants vs. Zombies 2 - Excavator Zombie - Walking.gif", 168, 216));
-            zombieActionImages.put("ExcavatorZombie_Eating", loadImage("/Mobile - Plants vs. Zombies 2 - Excavator Zombie - Eating.gif", 168, 216));
-            zombieIdleImages.put("Chicken", loadImage("/Mobile - Plants vs. Zombies 2 - Zombie Chicken - Idle_Walking.gif", 100, 120));
+            chickenWranglerIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Walking.gif", 168, 216);
+            chickenWranglerEating = loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Eating.gif", 168, 216);
+            chickenWranglerReleasing = loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Plague Pharmacy - Without Chickens - Battle (Chinese Only - Removed).gif", 175, 225);
+            excavatorIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Excavator Zombie - Walking.gif", 168, 216);
+            excavatorEating = loadImage("/Mobile - Plants vs. Zombies 2 - Excavator Zombie - Eating.gif", 168, 216);
+            chickenIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Zombie Chicken - Idle_Walking.gif", 100, 120);
             chickenWranglerNoChickens = loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Walking - Without Chickens.gif", 168, 216);
 
             basicZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Death - Flag Zombie.gif", 140, 180);
@@ -167,7 +169,6 @@ public class GameCanvas extends Canvas {
             pharaohWalkingNoArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Walking.gif", 168, 216);
             pharaohEatingNoArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Eating.gif", 168, 216);
             pharaohDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Death.gif", 140, 180);
-            zombieIdleImages.put("PharaohZombie", pharaohWalkingArmor);
 
             shovelImage = loadImage("/111px-Shovel2.png", 100, 100);
             mowerImage = loadImage("/120px-Lawn_mower_2.png");
@@ -176,7 +177,6 @@ public class GameCanvas extends Canvas {
             butterImage = loadImage("/Butter_2.png");
             butterOverlayImage = loadImage("/Butter on face.png");
             sunImage = loadImage("/Sun_PvZ2.png");
-            chickenImage = loadImage("/Mobile - Plants vs. Zombies 2 - Zombie Chicken - Idle_Walking.gif");
             chickenDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Zombie Chicken - Feather Burst.gif", 100, 120);
         } catch (Exception e) {
             System.err.println("Could not load object animations: " + e.getMessage());
@@ -295,7 +295,6 @@ public class GameCanvas extends Canvas {
             gc.drawImage(shovelImage, mouseX - 35, mouseY - 35, 70, 70);
         }
 
-        // Vẽ thanh chọn Zombie ở phía dưới màn hình khi ở chế độ Test/Debug
         if (gameBoard.isDebugMode() || (gameBoard.getLevelConfig() != null && gameBoard.getLevelConfig().getLevelNumber() == 6)) {
             drawZombieSelectionBar();
         }
@@ -337,7 +336,7 @@ public class GameCanvas extends Canvas {
             }
 
             // Vẽ icon Zombie
-            Image img = zombieIdleImages.get(type);
+            Image img = getZombieIdleImageByType(type);
             if (img != null) {
                 double iconSize = 55;
                 gc.drawImage(img, btnX + (70 - iconSize) / 2.0, btnY + (65 - iconSize) / 2.0, iconSize, iconSize);
@@ -346,6 +345,18 @@ public class GameCanvas extends Canvas {
             gc.setStroke(Color.WHITE);
             gc.setLineWidth(1);
             gc.strokeRoundRect(btnX, btnY, 70, 65, 10, 10);
+        }
+    }
+
+    private Image getZombieIdleImageByType(String type) {
+        switch (type) {
+            case "BasicZombie": return basicZombieIdle;
+            case "PharaohZombie": return pharaohWalkingArmor;
+            case "FlagZombie": return flagZombieIdle;
+            case "AllStarZombie": return allStarWalking;
+            case "ExcavatorZombie": return excavatorIdle;
+            case "ChickenWranglerZombie": return chickenWranglerIdle;
+            default: return null;
         }
     }
 
@@ -449,48 +460,46 @@ public class GameCanvas extends Canvas {
     }
 
     private Image getPlantImage(Plant plant) {
-        String key = plant.getClass().getSimpleName();
-        if (plant instanceof Sunflower && ((Sunflower) plant).isProducing()) {
-            return plantActionImages.get(key);
+        if (plant instanceof Sunflower) {
+            return ((Sunflower) plant).isProducing() ? sunflowerProduce : sunflowerIdle;
         }
         if (plant instanceof Wallnut) {
-            double hpPercent = (double) plant.getHealth() / 500.0;
-            if (hpPercent < 0.25) return wallnutDegrade3 != null ? wallnutDegrade3 : plantIdleImages.get(key);
-            if (hpPercent < 0.50) return wallnutDegrade1 != null ? wallnutDegrade1 : plantIdleImages.get(key);
+            double hpPercent = (double) plant.getHealth() / Wallnut.HEALTH;
+            if (hpPercent < 0.25) return wallnutDegrade3 != null ? wallnutDegrade3 : wallnutIdle;
+            if (hpPercent < 0.50) return wallnutDegrade1 != null ? wallnutDegrade1 : wallnutIdle;
+            return wallnutIdle;
         }
-        if (plant instanceof Peashooter && plant.isRecentlyActive(900)) {
-            return plantActionImages.get(key);
+        if (plant instanceof Peashooter) {
+            return plant.isRecentlyActive(900) ? peashooterAction : peashooterIdle;
         }
-        if (plant instanceof KernelPult && plant.isRecentlyActive(900)) {
-            return plantActionImages.get(key);
+        if (plant instanceof KernelPult) {
+            return plant.isRecentlyActive(900) ? kernelPultAction : kernelPultIdle;
         }
-        if (plant instanceof BonkChoy && plant.isRecentlyActive(900)) {
-            Zombie target = gameBoard.findNearestZombie(plant);
-            if (target == null) {
-                for (Zombie z : gameBoard.getZombies()) {
-                    if (Math.abs(z.getY() - plant.getY()) < GameBoard.getCellHeight() / 3.0 && Math.abs(z.getX() - plant.getX()) < GameBoard.getCellWidth() * 1.5) {
-                        target = z;
-                        break;
+        if (plant instanceof BonkChoy) {
+            if (plant.isRecentlyActive(900)) {
+                Zombie target = gameBoard.findNearestZombie(plant);
+                if (target == null) {
+                    for (Zombie z : gameBoard.getZombies()) {
+                        if (Math.abs(z.getY() - plant.getY()) < GameBoard.getCellHeight() / 3.0 && Math.abs(z.getX() - plant.getX()) < GameBoard.getCellWidth() * 1.5) {
+                            target = z;
+                            break;
+                        }
                     }
                 }
-            }
-            
-            if (target != null) {
-                boolean isFront = target.getX() > plant.getX();
-                boolean isFinisher = target.getHealth() <= 25;
-                
-                if (isFront) {
-                    return isFinisher ? bonkChoyFinisherFront : bonkChoyAttackFront;
-                } else {
-                    return isFinisher ? bonkChoyFinisherBack : bonkChoyAttackBack;
+                if (target != null) {
+                    boolean isFront = target.getX() > plant.getX();
+                    boolean isFinisher = target.getHealth() <= 25;
+                    if (isFront) return isFinisher ? bonkChoyFinisherFront : bonkChoyAttackFront;
+                    else return isFinisher ? bonkChoyFinisherBack : bonkChoyAttackBack;
                 }
+                return bonkChoyAttackFront;
             }
-            return bonkChoyAttackFront;
+            return bonkChoyIdle;
         }
-        if (plant instanceof SpikeWeed && plant.isRecentlyActive(900)) {
-            return plantActionImages.get(key);
+        if (plant instanceof SpikeWeed) {
+            return plant.isRecentlyActive(900) ? spikeWeedAction : spikeWeedIdle;
         }
-        return plantIdleImages.get(key);
+        return null;
     }
 
     private void drawZombie(Zombie zombie) {
@@ -529,13 +538,13 @@ public class GameCanvas extends Canvas {
                 AllStarZombie az = (AllStarZombie) zombie;
                 Image currentImg;
                 if (az.isCharging()) {
-                    currentImg = allStarTackle != null ? allStarTackle : zombieActionImages.get("AllStarZombie_Eating");
+                    currentImg = allStarTackle;
                 } else if (az.isEating()) {
-                    currentImg = allStarKick != null ? allStarKick : zombieActionImages.get("AllStarZombie_Eating");
+                    currentImg = allStarKick;
                 } else if (zombie.getSpeed() > 0.3) {
-                    currentImg = allStarRunning != null ? allStarRunning : zombieIdleImages.get("AllStarZombie");
+                    currentImg = allStarRunning;
                 } else {
-                    currentImg = allStarWalking != null ? allStarWalking : zombieIdleImages.get("AllStarZombie");
+                    currentImg = allStarWalking;
                 }
                 if (currentImg != null) {
                     gc.drawImage(currentImg, tx(zombie.getX() + zombieVisualXOffset), ty(zombie.getY() + vOffsetY), visualWidth, visualHeight);
@@ -581,58 +590,49 @@ public class GameCanvas extends Canvas {
     }
 
     private Image getZombieImage(Zombie zombie) {
-        String key = zombie.getClass().getSimpleName();
         if (zombie instanceof PharaohZombie) {
             PharaohZombie pz = (PharaohZombie) zombie;
             if (pz.isDying()) {
-                if (pz.isDeathAnimFinished()) {
-                    return null;
-                }
-                return pharaohDeath != null ? pharaohDeath : zombieActionImages.get("PharaohZombie_Death");
+                return pz.isDeathAnimFinished() ? null : pharaohDeath;
             }
-            if (pz.isArmorBreakAnim()) {
-                return pharaohArmorDestroyed != null ? pharaohArmorDestroyed : zombieActionImages.get("PharaohZombie_Destroyed");
-            }
-            if (zombie.isEating()) {
-                return !pz.isArmorBroken() ? pharaohEatingArmor : pharaohEatingNoArmor;
-            }
+            if (pz.isArmorBreakAnim()) return pharaohArmorDestroyed;
+            if (zombie.isEating()) return !pz.isArmorBroken() ? pharaohEatingArmor : pharaohEatingNoArmor;
             return !pz.isArmorBroken() ? pharaohWalkingArmor : pharaohWalkingNoArmor;
         }
 
         if (zombie.isDying()) {
-            if (zombie.isDeathAnimFinished()) {
-                return null;
-            }
-
-            if (zombie instanceof AllStarZombie) {
-                return allStarZombieDeath != null ? allStarZombieDeath : zombieIdleImages.get("AllStarZombie");
-            }
-            if (zombie instanceof ChickenWranglerZombie) {
-                return chickenWranglerZombieDeath != null ? chickenWranglerZombieDeath : zombieIdleImages.get("ChickenWranglerZombie");
-            }
-            if (zombie instanceof ExcavatorZombie) {
-                return excavatorZombieDeath != null ? excavatorZombieDeath : zombieIdleImages.get("ExcavatorZombie");
-            }
-            if (zombie instanceof FlagZombie) {
-                return basicZombieDeath != null ? basicZombieDeath : zombieIdleImages.get("FlagZombie");
-            }
-            if (zombie instanceof Chicken) {
-                return chickenDeath != null ? chickenDeath : zombieIdleImages.get("Chicken");
-            }
-            return basicZombieDeathAnim != null ? basicZombieDeathAnim : zombieIdleImages.get("BasicZombie");
+            if (zombie.isDeathAnimFinished()) return null;
+            if (zombie instanceof AllStarZombie) return allStarZombieDeath;
+            if (zombie instanceof ChickenWranglerZombie) return chickenWranglerZombieDeath;
+            if (zombie instanceof ExcavatorZombie) return excavatorZombieDeath;
+            if (zombie instanceof FlagZombie) return basicZombieDeath;
+            if (zombie instanceof Chicken) return chickenDeath;
+            return basicZombieDeathAnim;
         }
 
         if (zombie.isEating()) {
-            Image eatingImg = zombieActionImages.get(key + "_Eating");
-            if (eatingImg != null) return eatingImg;
-
-            if (zombie instanceof PharaohZombie) {
-                return zombieActionImages.get("BasicZombie_Eating");
+            if (zombie instanceof BasicZombie) return basicZombieEating;
+            if (zombie instanceof FlagZombie) return flagZombieEating;
+            if (zombie instanceof AllStarZombie) return allStarKick;
+            if (zombie instanceof ChickenWranglerZombie) {
+                ChickenWranglerZombie cw = (ChickenWranglerZombie) zombie;
+                return cw.isReleasing() ? chickenWranglerReleasing : chickenWranglerEating;
             }
+            if (zombie instanceof ExcavatorZombie) return excavatorEating;
         }
-        Image idle = zombieIdleImages.get(key);
-        if (idle != null) return idle;
-        return zombieIdleImages.get("BasicZombie");
+
+        if (zombie instanceof BasicZombie) return basicZombieIdle;
+        if (zombie instanceof FlagZombie) return flagZombieIdle;
+        if (zombie instanceof AllStarZombie) return allStarWalking;
+        if (zombie instanceof ChickenWranglerZombie) {
+            ChickenWranglerZombie cw = (ChickenWranglerZombie) zombie;
+            if (cw.isReleasing()) return chickenWranglerReleasing;
+            return cw.hasReleasingStarted() ? chickenWranglerNoChickens : chickenWranglerIdle;
+        }
+        if (zombie instanceof ExcavatorZombie) return excavatorIdle;
+        if (zombie instanceof Chicken) return chickenIdle;
+
+        return basicZombieIdle;
     }
 
     private void showSunMessage(double x, double y) {
@@ -835,7 +835,7 @@ public class GameCanvas extends Canvas {
 
             if (selectedPlant != null) {
                 Plant newPlant = createPlantCopy(selectedPlant);
-                if (gameBoard.getSun() < newPlant.getCost()) {
+                if (!gameBoard.isFreePlantsMode() && gameBoard.getSun() < newPlant.getCost()) {
                     showSunMessage(event.getX(), event.getY());
                     event.consume();
                     return;
@@ -861,6 +861,10 @@ public class GameCanvas extends Canvas {
             case D:
                 gameBoard.setDebugMode(!gameBoard.isDebugMode());
                 System.out.println("Debug Mode (Auto-spawn OFF): " + gameBoard.isDebugMode());
+                break;
+            case U:
+                gameBoard.setFreePlantsMode(!gameBoard.isFreePlantsMode());
+                System.out.println("Free Plants Mode: " + gameBoard.isFreePlantsMode());
                 break;
             case DIGIT1: setSelectedZombieType("BasicZombie"); break;
             case DIGIT2: setSelectedZombieType("PharaohZombie"); break;
@@ -913,7 +917,7 @@ public class GameCanvas extends Canvas {
                     success = gameBoard.removePlantAt(boardX, boardY);
                 } else {
                     Plant newPlant = createPlantFromType(db.getString());
-                    if (newPlant != null && gameBoard.getSun() < newPlant.getCost()) {
+                    if (newPlant != null && !gameBoard.isFreePlantsMode() && gameBoard.getSun() < newPlant.getCost()) {
                         showSunMessage(event.getX(), event.getY());
                         event.setDropCompleted(false);
                         return;
@@ -1020,5 +1024,4 @@ public class GameCanvas extends Canvas {
         this.selectedZombieType = type;
         this.selectedPlant = null;
         System.out.println("Selected Zombie: " + type);
-    }
-}
+    }}

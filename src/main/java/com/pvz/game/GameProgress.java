@@ -9,7 +9,7 @@ public class GameProgress {
     private Set<String> discoveredZombies = new HashSet<>();
     private Set<String> discoveredPlants = new HashSet<>();
     private static final String SAVE_FILE = "progress.txt";
-    private static final boolean DEBUG_UNLOCK_ALL_LEVELS = true;
+    private static final boolean DEBUG_UNLOCK_ALL_LEVELS = false;
 
     private GameProgress() {
         load();

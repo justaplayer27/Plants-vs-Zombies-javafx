@@ -45,6 +45,7 @@ public class GameBoard {
     private boolean randomSpawnActive = true;
     private LevelConfig levelConfig;
     private boolean debugMode = false;
+    private boolean freePlantsMode = false;
     private String lastNewZombieType = null;
     private Set<String> sessionDiscoveredZombies;
     private boolean flagSpawnedThisWave = false;
@@ -84,7 +85,7 @@ public class GameBoard {
             return false;
         }
         
-        if (sun < plant.getCost()) {
+        if (!freePlantsMode && sun < plant.getCost()) {
             return false;
         }
 
@@ -104,7 +105,9 @@ public class GameBoard {
         plant.setX(x);
         plant.setY(y);
         plants.add(plant);
-        sun -= plant.getCost();
+        if (!freePlantsMode) {
+            sun -= plant.getCost();
+        }
         return true;
     }
 
@@ -155,6 +158,23 @@ public class GameBoard {
 
     public boolean isDebugMode() {
         return debugMode;
+    }
+
+public void setFreePlantsMode(boolean freePlantsMode) {
+        this.freePlantsMode = freePlantsMode;
+    }
+
+    public boolean isFreePlantsMode() {
+        return freePlantsMode;
+    }
+
+    // Alias method for GameWindow compatibility
+    public void setFreePlantMode(boolean freePlantMode) {
+        this.freePlantsMode = freePlantMode;
+    }
+
+    public boolean isFreePlantMode() {
+        return freePlantsMode;
     }
 
     public void update() {
