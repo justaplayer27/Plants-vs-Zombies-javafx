@@ -20,6 +20,10 @@ public abstract class Plant extends Entity {
         lastActionTime = System.currentTimeMillis();
     }
 
+    public boolean isRecentlyActive(long millis) {
+        return System.currentTimeMillis() - lastActionTime < millis;
+    }
+
     @Override
     public void update() {
         // Default plant update - no movement

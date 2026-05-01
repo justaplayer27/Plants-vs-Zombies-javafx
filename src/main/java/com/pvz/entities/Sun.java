@@ -3,7 +3,7 @@ package com.pvz.entities;
 import java.util.Random;
 
 public class Sun extends Entity {
-    public static final int VALUE = 25;
+    public static final int VALUE = 50;
     private double speed = 1.5;
     private double targetY;
     private double initialY;

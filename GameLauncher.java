@@ -51,6 +51,9 @@ public class GameLauncher {
                 System.exit(1);
             }
             
+            System.out.println("Copying resources...");
+            copyResources(Paths.get("src/main/resources"), Paths.get(BIN_DIR));
+            
             System.out.println("Build successful!");
             System.out.println();
             System.out.println("Starting game...");
@@ -64,6 +67,22 @@ public class GameLauncher {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    private static void copyResources(Path source, Path target) throws IOException {
+        if (!Files.exists(source)) return;
+        Files.walk(source).forEach(path -> {
+            try {
+                Path dest = target.resolve(source.relativize(path));
+                if (Files.isDirectory(path)) {
+                    if (!Files.exists(dest)) Files.createDirectories(dest);
+                } else {
+                    Files.copy(path, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                // Ignore errors for individual files
+            }
+        });
     }
     
     private static boolean compile() throws IOException, InterruptedException {

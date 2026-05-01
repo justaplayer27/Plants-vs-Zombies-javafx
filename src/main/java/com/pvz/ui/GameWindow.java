@@ -13,6 +13,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.animation.AnimationTimer;
@@ -47,6 +50,7 @@ public class GameWindow {
     private VBox specialHealthVBox;
     private LevelConfig levelConfig;
     private AnimationTimer gameTimer;
+    private Font gameFont;
     
     private StackPane rootPane;
     private VBox overlayPanel;
@@ -57,6 +61,7 @@ public class GameWindow {
     private Button overlayMenuBtn;
     
     private Button notificationBtn;
+    private Button unlockInfoBtn;
     private StackPane idCardOverlay;
     private VBox idCardContent;
 
@@ -70,6 +75,7 @@ public class GameWindow {
     }
 
     private void setupUI() {
+        gameFont = loadPvZFont(16);
         // Main container for game and HUD
         StackPane gameContainer = new StackPane();
 
@@ -131,21 +137,25 @@ public class GameWindow {
         overlayPanel.setMouseTransparent(true);
 
         overlayStatusLabel = new Label("ĐANG TẠM DỪNG");
-        overlayStatusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 40; -fx-font-weight: bold;");
+        overlayStatusLabel.setFont(Font.font(gameFont.getFamily(), 40));
+        overlayStatusLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
 
         overlayResumeBtn = new Button("Resume");
-        overlayResumeBtn.setStyle("-fx-font-size: 18; -fx-min-width: 150;");
+        overlayResumeBtn.setFont(Font.font(gameFont.getFamily(), 18));
+        overlayResumeBtn.setStyle("-fx-min-width: 150;");
         overlayResumeBtn.setOnAction(e -> togglePause());
 
         overlayRestartBtn = new Button("Restart");
-        overlayRestartBtn.setStyle("-fx-font-size: 18; -fx-min-width: 150; -fx-background-color: #ff4444; -fx-text-fill: white;");
+        overlayRestartBtn.setFont(Font.font(gameFont.getFamily(), 18));
+        overlayRestartBtn.setStyle("-fx-min-width: 150; -fx-background-color: #ff4444; -fx-text-fill: white;");
         overlayRestartBtn.setOnAction(e -> {
             overlayPanel.setVisible(false);
             restartGame();
         });
 
         overlayNextBtn = new Button("Next Level");
-        overlayNextBtn.setStyle("-fx-font-size: 18; -fx-min-width: 150; -fx-background-color: #4CAF50; -fx-text-fill: white;");
+        overlayNextBtn.setFont(Font.font(gameFont.getFamily(), 18));
+        overlayNextBtn.setStyle("-fx-min-width: 150; -fx-background-color: #4CAF50; -fx-text-fill: white;");
         overlayNextBtn.setOnAction(e -> {
             if (levelConfig != null && levelConfig.getLevelNumber() < 5) {
                 int nextLevel = levelConfig.getLevelNumber() + 1;
@@ -157,13 +167,20 @@ public class GameWindow {
         });
 
         overlayMenuBtn = new Button("Menu");
-        overlayMenuBtn.setStyle("-fx-font-size: 18; -fx-min-width: 150;");
+        overlayMenuBtn.setFont(Font.font(gameFont.getFamily(), 18));
+        overlayMenuBtn.setStyle("-fx-min-width: 150;");
         overlayMenuBtn.setOnAction(e -> {
             LevelSelectScreen menu = new LevelSelectScreen(primaryStage);
             menu.show();
         });
 
-        overlayPanel.getChildren().addAll(overlayStatusLabel, overlayResumeBtn, overlayRestartBtn, overlayNextBtn, overlayMenuBtn);
+        unlockInfoBtn = new Button();
+        unlockInfoBtn.setFont(Font.font(gameFont.getFamily(), 16));
+        unlockInfoBtn.setStyle("-fx-background-color: #ff9800; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 240;");
+        unlockInfoBtn.setVisible(false);
+        unlockInfoBtn.setOnAction(e -> showEntityInfoCard((String) unlockInfoBtn.getUserData()));
+
+        overlayPanel.getChildren().addAll(overlayStatusLabel, overlayResumeBtn, overlayRestartBtn, overlayNextBtn, unlockInfoBtn, overlayMenuBtn);
     }
 
     private void createIdCardOverlay() {
@@ -175,9 +192,9 @@ public class GameWindow {
         idCardContent = new VBox(20);
         idCardContent.setAlignment(Pos.CENTER);
         idCardContent.setMaxSize(550, 350);
-        idCardContent.setStyle("-fx-background-color: #f0e68c; -fx-padding: 25; -fx-border-color: #8b4513; -fx-border-width: 5; -fx-background-radius: 15; -fx-border-radius: 10;");
+        idCardContent.setStyle("-fx-background-color: #424242; -fx-padding: 25; -fx-background-radius: 15;");
 
-        Label cardTitle = new Label("ZOMBIE IDENTIFICATION CARD");
+        Label cardTitle = new Label("IDENTIFICATION CARD");
         cardTitle.setStyle("-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #8b4513;");
         
         idCardContent.getChildren().add(cardTitle);
@@ -189,6 +206,7 @@ public class GameWindow {
             idCardOverlay.setMouseTransparent(true);
             togglePause();
         });
+        idCardContent.getChildren().add(okBtn);
         
         idCardOverlay.getChildren().add(idCardContent);
     }
@@ -205,17 +223,20 @@ public class GameWindow {
         sunContainer.setAlignment(Pos.CENTER_LEFT);
         ImageView sunIcon = loadButtonGraphic("/Sun_PvZ2.png", 35, 35);
         sunLabel = new Label("100");
-        sunLabel.setStyle("-fx-font-size: 18; -fx-text-fill: white; -fx-font-weight: bold; " +
+        sunLabel.setFont(Font.font(gameFont.getFamily(), 18));
+        sunLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; " +
                          "-fx-background-color: rgba(0, 0, 0, 0.5); -fx-padding: 2 10 2 10; -fx-background-radius: 12;");
         if (sunIcon != null) sunContainer.getChildren().add(sunIcon);
         sunContainer.getChildren().add(sunLabel);
 
         waveLabel = new Label("Wave: 0");
-        waveLabel.setStyle("-fx-font-size: 18; -fx-text-fill: #ff0000; -fx-font-weight: bold;");
+        waveLabel.setFont(Font.font(gameFont.getFamily(), 18));
+        waveLabel.setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
         leftPanel.getChildren().addAll(sunContainer, waveLabel);
 
         pauseButton = new Button("||");
-        pauseButton.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-min-width: 40;");
+        pauseButton.setFont(Font.font(gameFont.getFamily(), 16));
+        pauseButton.setStyle("-fx-font-weight: bold; -fx-min-width: 40;");
         pauseButton.setOnAction(e -> togglePause());
 
         Button shovelBtn = new Button();
@@ -247,7 +268,7 @@ public class GameWindow {
         notificationBtn = new Button("");
         notificationBtn.setStyle("-fx-background-color: #ff9800; -fx-text-fill: white; -fx-font-weight: bold;");
         notificationBtn.setVisible(false);
-        notificationBtn.setOnAction(e -> showZombieIdCard((String)notificationBtn.getUserData()));
+        notificationBtn.setOnAction(e -> showEntityInfoCard((String)notificationBtn.getUserData()));
 
         // Thêm một spacer để đẩy nút pause sang bên phải
         Region spacer = new Region();
@@ -275,7 +296,7 @@ public class GameWindow {
         plantSelector.getChildren().add(sunflowerBtn);
 
         if (allowedPlants.contains("Wallnut")) {
-            Button wallnutBtn = createPlantButton("", "/SeedPacketWall-nut.jpg", "Wallnut", () -> new Wallnut(0, 0));
+            Button wallnutBtn = createPlantButton("", "/SeedPacketWall-nut.png", "Wallnut", () -> new Wallnut(0, 0));
             plantSelector.getChildren().add(wallnutBtn);
         }
 
@@ -328,6 +349,27 @@ public class GameWindow {
         return null;
     }
 
+    private Font loadPvZFont(double size) {
+        try {
+            java.io.InputStream is = getClass().getResourceAsStream("/PvZ2 Regular By Beast and MF.ttf");
+            if (is == null) {
+                java.io.File fallbackFile = new java.io.File("src/main/resources/PvZ2 Regular By Beast and MF.ttf");
+                if (fallbackFile.exists()) {
+                    is = new java.io.FileInputStream(fallbackFile);
+                }
+            }
+            if (is != null) {
+                Font font = Font.loadFont(is, size);
+                is.close();
+                if (font != null) {
+                    return font;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return Font.font("System", size);
+    }
+
     private void configurePlantDragButton(Button button, String plantName, Supplier<Plant> supplier, Image dragImage) {
         button.setOnAction(e -> gameCanvas.setSelectedPlant(supplier.get()));
         button.setOnDragDetected(e -> {
@@ -347,53 +389,155 @@ public class GameWindow {
         });
     }
 
-    private void showZombieIdCard(String type) {
-        if (!isPaused) togglePause();
-        
+    private void showNotification(String category, String itemId) {
+        if (itemId == null || itemId.isEmpty()) {
+            return;
+        }
+        if ("Zombie".equals(category)) {
+            notificationBtn.setText("*New: " + itemId);
+            notificationBtn.setUserData(category + ":" + itemId);
+            notificationBtn.setVisible(true);
+        }
+    }
+
+    private void showEntityInfoCard(String itemKey) {
+        if (itemKey == null || itemKey.isEmpty()) {
+            return;
+        }
+        if (!isPaused && !gameBoard.isGameOver()) {
+            togglePause();
+        }
+
         idCardContent.getChildren().clear();
-        
-        Label cardTitle = new Label("ZOMBIE IDENTIFICATION CARD");
-        cardTitle.setStyle("-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #8b4513;");
-        
-        // Horizontal Layout for ID Card Body
+        idCardContent.setStyle("-fx-background-color: #424242; -fx-padding: 25; -fx-background-radius: 15;");
+        String[] parts = itemKey.split(":", 2);
+        String category = parts.length > 1 ? parts[0] : "Zombie";
+        String type = parts.length > 1 ? parts[1] : parts[0];
+
+        String imagePath = null;
+        String desc = "";
+        String stats = "";
+        String titleText = type;
+
+        switch (category) {
+            case "Plant":
+                titleText = type;
+                switch (type) {
+                    case "Peashooter":
+                        imagePath = "/PeashooterSeedPacketPvZ2C.png";
+                        desc = "A reliable ranged attacker that fires peas at zombies. Good early on for basic line defense.";
+                        stats = "Damage: 45 | Speed: Normal | Cost: 100";
+                        break;
+                    case "Sunflower":
+                        imagePath = "/SunflowerPvZ2SeedPacket.png";
+                        desc = "She is the heartbeat of the garden, a radiator of pure optimism. While others focus on the battle, she focuses on the light, knowing that as long as she keeps smiling, the rest of the family will never have to fight in the dark.";
+                        stats = "Generates: 25 sun | Cooldown: 24s | Cost: 50";
+                        break;
+                    case "Wallnut":
+                        imagePath = "/SeedPacketWall-nut.png";
+                        desc = "He doesn't have thorns or projectiles; all he has is his presence. There’s a quiet bravery in standing perfectly still while the world cracks around you. He’s the friend who says, 'It's okay, I'll take the hit so you don't have to.'";
+                        stats = "Health: Very High | Slow | Cost: 50";
+                        break;
+                    case "SpikeWeed":
+                        imagePath = "/SpikeweedPvZ2SeedPacket.png";
+                        desc = "Born from the shadows of the garden floor, he’s a loner who prefers to stay grounded. He doesn't seek glory or height; he simply offers a sharp reminder to those who try to trample over the things he loves.";
+                        stats = "Damage: 10/tick | Slow effect | Cost: 100";
+                        break;
+                    case "KernelPult":
+                        imagePath = "/KernelpultPvZ2SeedPacket.png";
+                        desc = "He’s a bit of a dreamer, often launching butter when the world expects corn. But beneath that flighty exterior is a loyal defender who understands that sometimes, the best way to stop a monster is to just make them pause for a moment of sticky confusion.";
+                        stats = "Damage: 80 | Lobbed attack | Cost: 125";
+                        break;
+                    case "BonkChoy":
+                        imagePath = "/BonkChoySeedPacket.png";
+                        desc = "A soul with a fighter’s spirit and a gardener’s heart. He doesn't wait for the trouble to come to him; he meets it head-on with a flurry of passion. He’s the protector who believes that sometimes, a stern talk isn't enough—you need to put some muscle behind your convictions.";
+                        stats = "Damage: 90 | Melee | Cost: 150";
+                        break;
+                    default:
+                        desc = "Unknown plant. Use it carefully and learn its strengths in battle.";
+                        stats = "Cost: ? | Effect: ?";
+                        break;
+                }
+                break;
+            default:
+                switch(type) {
+                    case "BasicZombie":
+                        imagePath = "/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking.gif";
+                        desc = "Slow-moving walker that relentlessly eats plants when it reaches them. Good for early defense and training your pea shooters.";
+                        stats = "Health: 200 | Speed: Slow";
+                        break;
+                    case "PharaohZombie":
+                        imagePath = "/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Walking - Sarcophagus.gif";
+                        desc = "Wrapped in the gold of a forgotten era, he is a king without a kingdom. He clings to his heavy sarcophagus as both a shield and a burden, a tragic soul trying to preserve his ancient dignity in a world that has long since moved on to the next life.";
+                        stats = "Health: 400 + 300 armor | Speed: Slow";
+                        break;
+                    case "FlagZombie":
+                        imagePath = "/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking - Flag Zombie.gif";
+                        desc = "In life, he was always the one leading the parade, the first to volunteer for the cause. In death, that leadership has turned into a haunting duty. He carries the tattered flag not for victory, but because it’s the only thing left that reminds him he was once part of something bigger.";
+                        stats = "Health: 240 | Speed: Fast";
+                        break;
+                    case "AllStarZombie":
+                        imagePath = "/Mobile - Plants vs. Zombies 2 - All-Star Zombie - Walking.gif";
+                        desc = "Charges through the first plant it hits, destroying it instantly, then slows down to a heavy walk. Treat it as a high-priority target.";
+                        stats = "Health: 600 | Speed: Charge then slow";
+                        break;
+                    case "ChickenWranglerZombie":
+                        imagePath = "/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Walking.gif";
+                        desc = "When damaged, it stops and releases chickens in bursts. The chickens sprint forward quickly, so take down the wrangler fast.";
+                        stats = "Health: 360 | Speed: Slow-to-Fast | Chicken delay: 0.6s";
+                        break;
+                    case "ExcavatorZombie":
+                        imagePath = "/Mobile - Plants vs. Zombies 2 - Excavator Zombie - Walking.gif";
+                        desc = "He spent his life digging for treasures and truth beneath the earth. Now, his shovel is just a tool of frustration, a way to push aside the very life he used to cultivate. He’s a restless wanderer, still searching for something he can't quite remember losing.";
+                        stats = "Health: 440 | Speed: Slow";
+                        break;
+                    default:
+                        desc = "Unknown zombie type. Stay alert and watch its behavior in battle.";
+                        stats = "Health: ? | Speed: ?";
+                        break;
+                }
+                break;
+        }
+
+        ImageView entityImage = null;
+        if (imagePath != null) {
+            entityImage = loadButtonGraphic(imagePath, 140, 140);
+            if (entityImage != null) {
+                entityImage.setPreserveRatio(true);
+                entityImage.setSmooth(true);
+            }
+        }
+
+        javafx.scene.Node imageRegion;
+        if (entityImage != null) {
+            imageRegion = entityImage;
+        } else {
+            javafx.scene.shape.Rectangle imgPlaceholder = new javafx.scene.shape.Rectangle(140, 140);
+            imgPlaceholder.setArcWidth(12);
+            imgPlaceholder.setArcHeight(12);
+            imgPlaceholder.setFill(javafx.scene.paint.Color.DARKGRAY);
+            imageRegion = imgPlaceholder;
+        }
+
         HBox idBody = new HBox(25);
         idBody.setAlignment(Pos.CENTER_LEFT);
-        
-        // Left Side: Image
-        javafx.scene.shape.Rectangle imgPlaceholder = new javafx.scene.shape.Rectangle(120, 150);
-        imgPlaceholder.setArcWidth(10);
-        imgPlaceholder.setArcHeight(10);
-        imgPlaceholder.setStroke(javafx.scene.paint.Color.DARKGRAY);
 
-        // Right Side: Details
         VBox details = new VBox(10);
         details.setAlignment(Pos.CENTER_LEFT);
 
-        String desc = "";
-        String stats = "";
-        
-        switch(type) {
-            case "BasicZombie": imgPlaceholder.setFill(javafx.scene.paint.Color.GRAY); desc = "A standard garden-variety zombie."; stats = "Health: 100 | Speed: Slow"; break;
-            case "PharaohZombie": imgPlaceholder.setFill(javafx.scene.paint.Color.GOLDENROD); desc = "His ancient Pharaoh mask provides incredible protection from damage."; stats = "Health: 200 | Speed: Slow"; break;
-            case "FlagZombie": imgPlaceholder.setFill(javafx.scene.paint.Color.GOLD); desc = "A rallying zombie that leads a stronger push."; stats = "Health: 120 | Speed: Fast"; break;
-            case "AllStarZombie": imgPlaceholder.setFill(javafx.scene.paint.Color.DARKRED); desc = "A powerful all-star zombie with heavy damage."; stats = "Health: 300 | Speed: Moderate"; break;
-            case "ChickenWranglerZombie": imgPlaceholder.setFill(javafx.scene.paint.Color.DARKORANGE); desc = "He protects himself with a chicken shield until it breaks."; stats = "Health: 180 | Speed: Slow-to-Fast"; break;
-            case "ExcavatorZombie": imgPlaceholder.setFill(javafx.scene.paint.Color.DARKOLIVEGREEN); desc = "He jumps over the first plant he meets."; stats = "Health: 220 | Speed: Slow"; break;
-        }
-        
-        Label nameLabel = new Label("Name: " + type);
-        nameLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333;");
-        
-        Label descLabel = new Label("Description: " + desc);
+        Label nameLabel = new Label(titleText);
+        nameLabel.setStyle("-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        Label descLabel = new Label(desc);
         descLabel.setWrapText(true);
-        descLabel.setMaxWidth(300);
-        descLabel.setStyle("-fx-font-size: 14; -fx-font-style: italic;");
-        
-        Label statsLabel = new Label("Stats: " + stats);
-        statsLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+        descLabel.setMaxWidth(320);
+        descLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #f0f0f0;");
+
+        Label statsLabel = new Label(stats);
+        statsLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #ffcc00;");
 
         details.getChildren().addAll(nameLabel, descLabel, statsLabel);
-        idBody.getChildren().addAll(imgPlaceholder, details);
+        idBody.getChildren().addAll(imageRegion, details);
 
         Button okBtn = new Button("OK");
         okBtn.setStyle("-fx-font-size: 16; -fx-min-width: 100; -fx-background-color: #8b4513; -fx-text-fill: white;");
@@ -401,12 +545,27 @@ public class GameWindow {
             idCardOverlay.setVisible(false);
             idCardOverlay.setMouseTransparent(true);
             notificationBtn.setVisible(false);
-            togglePause();
+            unlockInfoBtn.setVisible(false);
+            if (!gameBoard.isGameOver() && isPaused) {
+                togglePause();
+            }
         });
 
+        Label cardTitle = new Label(titleText);
+        cardTitle.setStyle("-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: white;");
         idCardContent.getChildren().addAll(cardTitle, idBody, okBtn);
         idCardOverlay.setVisible(true);
         idCardOverlay.setMouseTransparent(false);
+    }
+
+    private String getUnlockedPlantName(int currentLevel) {
+        switch (currentLevel) {
+            case 1: return "Wallnut";
+            case 2: return "KernelPult";
+            case 3: return "SpikeWeed";
+            case 4: return "BonkChoy";
+            default: return null;
+        }
     }
 
     private void togglePause() {
@@ -472,9 +631,7 @@ public class GameWindow {
                 
                 String newZombie = gameBoard.getAndClearLastNewZombieType();
                 if (newZombie != null) {
-                    notificationBtn.setText("(New) " + newZombie);
-                    notificationBtn.setUserData(newZombie);
-                    notificationBtn.setVisible(true);
+                    showNotification("Zombie", newZombie);
                 }
 
                 if (gameBoard.isGameOver()) {
@@ -506,6 +663,15 @@ public class GameWindow {
             overlayStatusLabel.setText(status + unlockMsg);
             overlayStatusLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-alignment: center;");
             overlayRestartBtn.setVisible(false);
+            String unlockPlant = getUnlockedPlantName(currentLevel);
+            if (unlockPlant != null) {
+                unlockInfoBtn.setText("*New: " + unlockPlant);
+                unlockInfoBtn.setUserData("Plant:" + unlockPlant);
+                unlockInfoBtn.setVisible(true);
+                GameProgress.getInstance().discoverPlant(unlockPlant);
+            } else {
+                unlockInfoBtn.setVisible(false);
+            }
             boolean hasNext = levelConfig != null && levelConfig.getLevelNumber() < 5;
             overlayNextBtn.setVisible(hasNext);
             overlayMenuBtn.setVisible(true);

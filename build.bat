@@ -17,7 +17,12 @@ for /r "src\main\java" %%f in (*.java) do (
     )
 )
 
-echo Build complete! Classes compiled to bin/
+echo Copying resources to bin/...
+if exist "src\main\resources" (
+    xcopy "src\main\resources\*" "bin\" /E /Y /I >nul
+)
+
+echo Build complete! Classes and resources copied to bin/
 
 REM Run the application
 echo Running application...
