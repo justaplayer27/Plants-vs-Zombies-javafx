@@ -16,7 +16,7 @@ import com.pvz.entities.Mower;
 import com.pvz.entities.Peashooter;
 import com.pvz.entities.Plant;
 import com.pvz.entities.Pea;
-import com.pvz.entities.Chicken;
+import com.pvz.entities.zombies.Chicken;
 import com.pvz.entities.Sun;
 import com.pvz.entities.Sunflower;
 import com.pvz.entities.Wallnut;
@@ -86,6 +86,12 @@ public class GameCanvas extends Canvas {
     private Map<String, Image> zombieActionImages;
     private double gridOffsetX = 0;
     private double gridOffsetY = 0;
+    private final String[] debugZombies = {"BasicZombie", "PharaohZombie", "FlagZombie", "AllStarZombie", "ExcavatorZombie", "ChickenWranglerZombie"};
+
+    private String sunMessage = null;
+    private double sunMsgX, sunMsgY;
+    private int sunMessageTimer = 0;
+    private static final int SUN_MSG_DURATION = 90; // Khoảng 1.5 giây ở 60fps
 
     private static class FlyingSun {
         double x, y;
@@ -94,7 +100,7 @@ public class GameCanvas extends Canvas {
     private final java.util.List<FlyingSun> flyingSuns = new java.util.ArrayList<>();
 
     public GameCanvas(GameBoard gameBoard) {
-        super(800, 650); // Fill the entire window
+        super(800, 650);
         this.gameBoard = gameBoard;
         this.gc = this.getGraphicsContext2D();
         
@@ -112,15 +118,8 @@ public class GameCanvas extends Canvas {
         zombieActionImages = new HashMap<>();
 
         try {
-            // Plant sprites and animations
             sunflowerProduce = loadImage("/Mobile - Plants vs. Zombies 2 - Sunflower - Sun Produce.gif", 110, 132);
             sunflowerIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Sunflower - Idle.gif", 100, 120);
-            // if (sunflowerProduce != null) {
-            //     long duration = calculateGifDuration(getClass().getResourceAsStream("/Mobile - Plants vs. Zombies 2 - Sunflower - Sun Produce.gif"));
-            //     if (duration > 0) {
-            //         com.pvz.entities.Sunflower.setProduceAnimationDuration(duration);
-            //     }
-            // }
 
             plantIdleImages.put("Peashooter", loadImage("/Mobile - Plants vs. Zombies 2 - Peashooter - Idle.gif", 100, 120));
             plantActionImages.put("Peashooter", loadImage("/Mobile - Plants vs. Zombies 2 - Peashooter - Attack.gif", 100, 120));
@@ -139,7 +138,6 @@ public class GameCanvas extends Canvas {
             wallnutDegrade1 = loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle - Degrade 1.gif", 120, 120);
             wallnutDegrade3 = loadImage("/Mobile - Plants vs. Zombies 2 - Wall-nut - Idle - Degrade 3.gif", 120, 120);
 
-            // Zombie sprites and animations
             basicZombieIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking.gif", 200, 216);
             zombieIdleImages.put("BasicZombie", basicZombieIdle);
             zombieActionImages.put("BasicZombie_Eating", loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Eating.gif", 168, 216));
@@ -158,9 +156,9 @@ public class GameCanvas extends Canvas {
             zombieIdleImages.put("Chicken", loadImage("/Mobile - Plants vs. Zombies 2 - Zombie Chicken - Idle_Walking.gif", 100, 120));
             chickenWranglerNoChickens = loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Walking - Without Chickens.gif", 168, 216);
 
-            basicZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Death - Flag Zombie.gif", 140, 180); // For FlagZombie
+            basicZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Death - Flag Zombie.gif", 140, 180);
             allStarZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - All-Star Zombie - Death.gif", 270, 390);
-            basicZombieDeathAnim = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Death.gif", 140, 180); // For BasicZombie
+            basicZombieDeathAnim = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Death.gif", 140, 180);
             chickenWranglerZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Death.gif", 140, 190);
             excavatorZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Excavator Zombie - Death.gif", 140, 180);
             pharaohWalkingArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Walking - Sarcophagus.gif", 182, 234);
@@ -169,8 +167,8 @@ public class GameCanvas extends Canvas {
             pharaohWalkingNoArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Walking.gif", 168, 216);
             pharaohEatingNoArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Eating.gif", 168, 216);
             pharaohDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Death.gif", 140, 180);
+            zombieIdleImages.put("PharaohZombie", pharaohWalkingArmor);
 
-            // Misc objects
             shovelImage = loadImage("/111px-Shovel2.png", 100, 100);
             mowerImage = loadImage("/120px-Lawn_mower_2.png");
             peaImage = loadImage("/Pea.png");
@@ -184,58 +182,15 @@ public class GameCanvas extends Canvas {
             System.err.println("Could not load object animations: " + e.getMessage());
         }
 
-        // Mouse input handling
         setOnMouseClicked(this::handleMouseClick);
         setOnMouseMoved(this::handleMouseMove);
         setOnDragOver(this::handleDragOver);
         setOnDragDropped(this::handleDragDropped);
         setOnDragExited(this::handleDragExited);
         
-        // Keyboard input for debug
         setFocusTraversable(true);
         setOnKeyPressed(this::handleKeyPressed);
     }
-
-    // private long calculateGifDuration(java.io.InputStream inputStream) {
-    //     try (ImageInputStream iis = ImageIO.createImageInputStream(inputStream)) {
-    //         if (iis == null) {
-    //             return 0;
-    //         }
-    //         Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-    //         if (!readers.hasNext()) {
-    //             return 0;
-    //         }
-    //         ImageReader reader = readers.next();
-    //         reader.setInput(iis, false);
-    //         int frames = reader.getNumImages(true);
-    //         long duration = 0;
-    //         for (int i = 0; i < frames; i++) {
-    //             IIOMetadata metadata = reader.getImageMetadata(i);
-    //             if (metadata != null) {
-    //                 Node tree = metadata.getAsTree("javax_imageio_gif_image_1.0");
-    //                 if (tree != null) {
-    //                     NodeList children = tree.getChildNodes();
-    //                     for (int j = 0; j < children.getLength(); j++) {
-    //                         Node node = children.item(j);
-    //                         if ("GraphicControlExtension".equals(node.getNodeName())) {
-    //                             Node delayNode = node.getAttributes().getNamedItem("delayTime");
-    //                             if (delayNode != null) {
-    //                                 try {
-    //                                     duration += Integer.parseInt(delayNode.getNodeValue()) * 10;
-    //                                 } catch (NumberFormatException ignored) {
-    //                                 }
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         reader.dispose();
-    //         return duration;
-    //     } catch (Exception e) {
-    //         return 0;
-    //     }
-    // }
 
     private Image loadImage(String path) {
         return loadImage(path, 0, 0);
@@ -305,53 +260,98 @@ public class GameCanvas extends Canvas {
                     0, 0, canvasW, canvasH);
         }
 
-        // Draw grid
         drawGrid();
         drawDragHighlight();
 
-        // Draw left-side mowers for each row
         for (Mower mower : gameBoard.getMowers()) {
             drawMower(mower);
         }
 
-        // Draw plants
         for (Plant plant : gameBoard.getPlants()) {
             drawPlant(plant);
         }
 
-        // Draw zombies (including spawned chickens as normal zombie units)
         for (Zombie zombie : gameBoard.getZombies()) {
             drawZombie(zombie);
         }
 
-        // Draw projectiles
         for (Pea pea : gameBoard.getProjectiles()) {
             drawPea(pea);
         }
 
-        // Draw suns
         for (Sun sun : gameBoard.getSuns()) {
             drawSun(sun);
         }
 
         drawFlyingSuns();
 
-        // Draw selected plant preview if mouse is over board
         if (selectedPlant != null) {
             drawSelectedPlantPreview();
         }
 
-        // Vẽ hình ảnh xẻng và khung nền đen mờ khi đang kéo (Drag)
         if (dragPlantType != null && "Shovel".equals(dragPlantType) && shovelImage != null) {
             gc.setFill(Color.rgb(0, 0, 0, 0.5));
             gc.fillOval(mouseX - 35, mouseY - 35, 70, 70);
             gc.drawImage(shovelImage, mouseX - 35, mouseY - 35, 70, 70);
         }
+
+        // Vẽ thanh chọn Zombie ở phía dưới màn hình khi ở chế độ Test/Debug
+        if (gameBoard.isDebugMode() || (gameBoard.getLevelConfig() != null && gameBoard.getLevelConfig().getLevelNumber() == 6)) {
+            drawZombieSelectionBar();
+        }
+
+        // Vẽ thông báo không đủ nắng (Not enough sun) mờ dần
+        if (sunMessageTimer > 0 && sunMessage != null) {
+            double alpha = Math.min(1.0, sunMessageTimer / 30.0); // Mờ dần trong 30 khung hình cuối
+            gc.setFill(Color.rgb(255, 0, 0, alpha));
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 22));
+            gc.fillText(sunMessage, sunMsgX - 60, sunMsgY);
+            sunMessageTimer--;
+        }
+    }
+
+    private void drawZombieSelectionBar() {
+        double barWidth = debugZombies.length * 80 + 20;
+        double barX = (getWidth() - barWidth) / 2;
+        double barY = getHeight() - 95; // Đặt ở gần sát mép dưới
+
+        // Vẽ nền cho thanh công cụ
+        gc.setFill(Color.rgb(40, 40, 40, 0.8));
+        gc.fillRoundRect(barX, barY, barWidth, 85, 15, 15);
+        gc.setStroke(Color.GOLD);
+        gc.setLineWidth(3);
+        gc.strokeRoundRect(barX, barY, barWidth, 85, 15, 15);
+
+        for (int i = 0; i < debugZombies.length; i++) {
+            String type = debugZombies[i];
+            double btnX = barX + 10 + i * 80;
+            double btnY = barY + 10;
+
+            // Highlight nếu zombie này đang được chọn
+            if (type.equals(selectedZombieType)) {
+                gc.setFill(Color.rgb(255, 215, 0, 0.5));
+                gc.fillRoundRect(btnX, btnY, 70, 65, 10, 10);
+            } else {
+                gc.setFill(Color.rgb(70, 70, 70, 0.9));
+                gc.fillRoundRect(btnX, btnY, 70, 65, 10, 10);
+            }
+
+            // Vẽ icon Zombie
+            Image img = zombieIdleImages.get(type);
+            if (img != null) {
+                double iconSize = 55;
+                gc.drawImage(img, btnX + (70 - iconSize) / 2.0, btnY + (65 - iconSize) / 2.0, iconSize, iconSize);
+            }
+            
+            gc.setStroke(Color.WHITE);
+            gc.setLineWidth(1);
+            gc.strokeRoundRect(btnX, btnY, 70, 65, 10, 10);
+        }
     }
 
     private void drawFlyingSuns() {
         java.util.Iterator<FlyingSun> it = flyingSuns.iterator();
-        double targetX = -gridOffsetX + 30; // Vị trí icon Sun trên HUD
+        double targetX = -gridOffsetX + 30;
         double targetY = -gridOffsetY + 30; 
         
         while (it.hasNext()) {
@@ -363,7 +363,7 @@ public class GameCanvas extends Canvas {
             if (dist < 15) {
                 it.remove();
             } else {
-                fs.x += dx * 0.2; // Tốc độ bay
+                fs.x += dx * 0.2;
                 fs.y += dy * 0.2;
                 if (sunImage != null) {
                     gc.drawImage(sunImage, tx(fs.x), ty(fs.y), 40, 40);
@@ -373,7 +373,7 @@ public class GameCanvas extends Canvas {
     }
 
     private void drawGrid() {
-        gc.setStroke(Color.rgb(255, 255, 255, 0.3)); // Slightly more visible for alignment
+        gc.setStroke(Color.rgb(255, 255, 255, 0.3));
         gc.setLineWidth(1);
         
         int cellWidth = GameBoard.getCellWidth();
@@ -401,8 +401,8 @@ public class GameCanvas extends Canvas {
         int cellWidth = GameBoard.getCellWidth();
         int cellHeight = GameBoard.getCellHeight();
         
-        double plantShift = 5;    // Cây xích xuống nhẹ để tạo độ sâu, theo yêu cầu
-        double shadowShift = 15;  // Đẩy bóng xuống sâu hẳn để nằm dưới chân thực thể
+        double plantShift = 5;
+        double shadowShift = 15;
 
         if (!(plant instanceof SpikeWeed)) {
             double shadowWidth = plant.getWidth() * 1.6;
@@ -427,7 +427,6 @@ public class GameCanvas extends Canvas {
         double baseY = plant instanceof SpikeWeed ? plant.getY() : plant.getY() + offsetY + plantShift;
 
         if (plantImg != null) {
-            // Scale: Wallnut và Sunflower giữ 1.6, các cây khác 2.2
             double scale = (plant instanceof Wallnut || plant instanceof Sunflower) ? 1.6 : 2.2;
             double visualWidth = plant.getWidth() * scale;
             double visualHeight = plant.getHeight() * scale;
@@ -466,10 +465,8 @@ public class GameCanvas extends Canvas {
             return plantActionImages.get(key);
         }
         if (plant instanceof BonkChoy && plant.isRecentlyActive(900)) {
-            // Tìm zombie gần nhất để quyết định hướng đánh
             Zombie target = gameBoard.findNearestZombie(plant);
             if (target == null) {
-                // Nếu không thấy zombie phía trước, kiểm tra xem có zombie nào đang ở trong tầm đánh (có thể ở sau lưng)
                 for (Zombie z : gameBoard.getZombies()) {
                     if (Math.abs(z.getY() - plant.getY()) < GameBoard.getCellHeight() / 3.0 && Math.abs(z.getX() - plant.getX()) < GameBoard.getCellWidth() * 1.5) {
                         target = z;
@@ -480,7 +477,7 @@ public class GameCanvas extends Canvas {
             
             if (target != null) {
                 boolean isFront = target.getX() > plant.getX();
-                boolean isFinisher = target.getHealth() <= 25; // Giả định là đòn kết liễu nếu zombie sắp chết
+                boolean isFinisher = target.getHealth() <= 25;
                 
                 if (isFront) {
                     return isFinisher ? bonkChoyFinisherFront : bonkChoyAttackFront;
@@ -500,18 +497,16 @@ public class GameCanvas extends Canvas {
         Image zombieImg = getZombieImage(zombie);
         int cellHeight = GameBoard.getCellHeight();
         
-        // Offset để dịch chuyển hình ảnh zombie theo yêu cầu
-        double zombieVisualXOffset = -15; // Dịch sang trái 15px
-        double zombieVisualYOffset = -15; // Dịch lên trên 15px
+        double zombieVisualXOffset = -15;
+        double zombieVisualYOffset = -15;
 
-        double verticalShift = 5; // Offset ban đầu cho vị trí Y của thực thể zombie
-        double zombieShadowShift = 12; // Bóng zombie cũng cần xích xuống thêm
+        double verticalShift = 5;
+        double zombieShadowShift = 12;
         double offsetY = (cellHeight - zombie.getHeight()) / 2 + verticalShift;
         double visualWidth = zombie.getWidth() * 2.2;
         double visualHeight = zombie.getHeight() * 2.2;
         double vOffsetY = (cellHeight - visualHeight) / 2 + verticalShift + zombieVisualYOffset;
 
-        // Vẽ bóng dưới chân Zombie (To và mờ viền)
         double shadowWidth = zombie.getWidth() * 1.5;
         double shadowHeight = 14;
         double zombieBottomY = zombie.getY() + offsetY + zombie.getHeight() + zombieShadowShift;
@@ -537,9 +532,9 @@ public class GameCanvas extends Canvas {
                     currentImg = allStarTackle != null ? allStarTackle : zombieActionImages.get("AllStarZombie_Eating");
                 } else if (az.isEating()) {
                     currentImg = allStarKick != null ? allStarKick : zombieActionImages.get("AllStarZombie_Eating");
-                } else if (zombie.getSpeed() > 0.3) { // Đang chạy
+                } else if (zombie.getSpeed() > 0.3) {
                     currentImg = allStarRunning != null ? allStarRunning : zombieIdleImages.get("AllStarZombie");
-                } else { // Đã húc xong và đang đi bộ
+                } else {
                     currentImg = allStarWalking != null ? allStarWalking : zombieIdleImages.get("AllStarZombie");
                 }
                 if (currentImg != null) {
@@ -549,7 +544,6 @@ public class GameCanvas extends Canvas {
                 gc.drawImage(zombieImg, tx(zombie.getX() + zombieVisualXOffset), ty(zombie.getY() + vOffsetY), visualWidth, visualHeight);
             }
         } else if (!zombie.isDying()) {
-            // Chỉ vẽ hình chữ nhật debug nếu zombie còn sống và không có ảnh
             if (zombie instanceof FlagZombie) {
                 gc.setFill(Color.GOLD);
             } else if (zombie instanceof AllStarZombie) {
@@ -561,7 +555,7 @@ public class GameCanvas extends Canvas {
             } else if (zombie instanceof PharaohZombie) {
                 gc.setFill(Color.SILVER);
             } else {
-                gc.setFill(Color.GRAY); // Basic
+                gc.setFill(Color.GRAY);
             }
             gc.fillRect(tx(zombie.getX() + zombieVisualXOffset), ty(zombie.getY() + offsetY + zombieVisualYOffset), zombie.getWidth(), zombie.getHeight());
             gc.setFill(Color.RED);
@@ -569,7 +563,6 @@ public class GameCanvas extends Canvas {
             gc.fillOval(tx(zombie.getX() + 25 + zombieVisualXOffset), ty(zombie.getY() + 10 + zombieVisualYOffset), 8, 8);
         }
 
-        // Vẽ bơ dính lên mặt nếu zombie bị bất động
         if (zombie.isStunned() && butterOverlayImage != null) {
             gc.drawImage(butterOverlayImage, tx(zombie.getX() + 10 + zombieVisualXOffset), ty(zombie.getY() + vOffsetY - 10), zombie.getWidth() * 1.5, zombie.getWidth() * 1.5);
         }
@@ -581,7 +574,7 @@ public class GameCanvas extends Canvas {
         else if (zombie instanceof ExcavatorZombie) type = "Excavator";
         else if (zombie instanceof PharaohZombie) type = "Pharaoh";
         gc.setFill(Color.WHITE);
-        gc.setFont(javafx.scene.text.Font.font(10)); // Font size
+        gc.setFont(javafx.scene.text.Font.font(10));
         gc.fillText(type, tx(zombie.getX() + zombieVisualXOffset), ty(zombie.getY() + offsetY + zombieVisualYOffset - 5));
 
         drawHealthBar(zombie, zombieVisualXOffset, offsetY + zombieVisualYOffset);
@@ -592,7 +585,6 @@ public class GameCanvas extends Canvas {
         if (zombie instanceof PharaohZombie) {
             PharaohZombie pz = (PharaohZombie) zombie;
             if (pz.isDying()) {
-                // If death animation is finished, draw nothing to prevent looping GIFs from re-playing.
                 if (pz.isDeathAnimFinished()) {
                     return null;
                 }
@@ -608,7 +600,6 @@ public class GameCanvas extends Canvas {
         }
 
         if (zombie.isDying()) {
-            // If death animation is finished, draw nothing to prevent looping GIFs from re-playing.
             if (zombie.isDeathAnimFinished()) {
                 return null;
             }
@@ -623,24 +614,18 @@ public class GameCanvas extends Canvas {
                 return excavatorZombieDeath != null ? excavatorZombieDeath : zombieIdleImages.get("ExcavatorZombie");
             }
             if (zombie instanceof FlagZombie) {
-                // basicZombieDeath is actually the death animation for FlagZombie
                 return basicZombieDeath != null ? basicZombieDeath : zombieIdleImages.get("FlagZombie");
             }
             if (zombie instanceof Chicken) {
                 return chickenDeath != null ? chickenDeath : zombieIdleImages.get("Chicken");
             }
-            // Fallback for BasicZombie and any other types
             return basicZombieDeathAnim != null ? basicZombieDeathAnim : zombieIdleImages.get("BasicZombie");
         }
 
-        if (zombie instanceof ChickenWranglerZombie && ((ChickenWranglerZombie) zombie).isReleasing()) {
-            return zombieActionImages.get("ChickenWranglerZombie_Releasing");
-        }
         if (zombie.isEating()) {
             Image eatingImg = zombieActionImages.get(key + "_Eating");
             if (eatingImg != null) return eatingImg;
 
-            // Fallback cho zombie đội nón, đội xô hoặc Pharaoh dùng hoạt ảnh ăn của zombie thường
             if (zombie instanceof PharaohZombie) {
                 return zombieActionImages.get("BasicZombie_Eating");
             }
@@ -648,6 +633,13 @@ public class GameCanvas extends Canvas {
         Image idle = zombieIdleImages.get(key);
         if (idle != null) return idle;
         return zombieIdleImages.get("BasicZombie");
+    }
+
+    private void showSunMessage(double x, double y) {
+        this.sunMessage = "Not enough sun!";
+        this.sunMsgX = x;
+        this.sunMsgY = y;
+        this.sunMessageTimer = SUN_MSG_DURATION;
     }
 
     private void drawPea(Pea pea) {
@@ -673,7 +665,6 @@ public class GameCanvas extends Canvas {
         }
         gc.setFill(Color.GOLD);
         gc.fillOval(tx(sun.getX()), ty(sun.getY()), sun.getWidth(), sun.getHeight());
-        // Draw sun rays
         gc.setStroke(Color.ORANGE);
         gc.setLineWidth(2);
         double centerX = tx(sun.getX() + sun.getWidth() / 2);
@@ -729,7 +720,6 @@ public class GameCanvas extends Canvas {
 
         double healthPercent = Math.max(0, Math.min(1, (double) Math.max(entity.getHealth(), 0) / maxHealth));
         
-        // Background bar
         gc.setFill(Color.DARKRED);
         gc.fillRect(tx(entity.getX() + offsetX), ty(entity.getY() + offsetY - 15), entity.getWidth(), 4);
         
@@ -743,7 +733,6 @@ public class GameCanvas extends Canvas {
             }
         }
         
-        // Main health bar
         if (entity instanceof PharaohZombie) {
             gc.setFill(Color.LIME);
         } else {
@@ -790,6 +779,23 @@ public class GameCanvas extends Canvas {
             return;
         }
 
+        // Kiểm tra xem có click vào thanh chọn Zombie hay không
+        if (gameBoard.isDebugMode() || (gameBoard.getLevelConfig() != null && gameBoard.getLevelConfig().getLevelNumber() == 6)) {
+            double barWidth = debugZombies.length * 80 + 20;
+            double barX = (getWidth() - barWidth) / 2;
+            double barY = getHeight() - 95;
+
+            if (event.getX() >= barX && event.getX() <= barX + barWidth &&
+                event.getY() >= barY && event.getY() <= barY + 85) {
+                int index = (int) ((event.getX() - barX - 10) / 80);
+                if (index >= 0 && index < debugZombies.length) {
+                    setSelectedZombieType(debugZombies[index]);
+                }
+                event.consume();
+                return;
+            }
+        }
+
         double boardX = screenToBoardX(event.getX());
         double boardY = screenToBoardY(event.getY());
         int cellWidth = GameBoard.getCellWidth();
@@ -797,19 +803,17 @@ public class GameCanvas extends Canvas {
         int gridX = (int) (boardX / cellWidth);
         int gridY = (int) (boardY / cellHeight);
 
-        // Kiểm tra xem click có nằm trong lưới không
         if (gridX < 0 || gridX >= GameBoard.getGridWidth() || gridY < 0 || gridY >= GameBoard.getGridHeight()) {
             return;
         }
 
         if (event.getButton() == MouseButton.PRIMARY) {
-            // Tăng hitbox sun: Duyệt và kiểm tra khoảng cách thay vì chỉ click điểm
             Sun hitSun = null;
             for (Sun s : gameBoard.getSuns()) {
                 double centerX = s.getX() + s.getWidth() / 2;
                 double centerY = s.getY() + s.getHeight() / 2;
                 double dist = Math.sqrt(Math.pow(boardX - centerX, 2) + Math.pow(boardY - centerY, 2));
-                if (dist < 65) { // Hitbox rộng 65px
+                if (dist < 65) {
                     hitSun = s;
                     break;
                 }
@@ -822,7 +826,6 @@ public class GameCanvas extends Canvas {
                 return;
             }
 
-            // Debug: Place zombie if selected
             if (selectedZombieType != null) {
                 double spawnY = gridY * GameBoard.getCellHeight() + 10;
                 gameBoard.addZombie(gameBoard.spawnZombieByType(selectedZombieType, boardX, spawnY));
@@ -830,23 +833,25 @@ public class GameCanvas extends Canvas {
                 return;
             }
 
-            // Then, place plant if no sun collected
             if (selectedPlant != null) {
                 Plant newPlant = createPlantCopy(selectedPlant);
+                if (gameBoard.getSun() < newPlant.getCost()) {
+                    showSunMessage(event.getX(), event.getY());
+                    event.consume();
+                    return;
+                }
                 if (gameBoard.plantAt(newPlant, gridX, gridY)) {
                     setSelectedPlant(null);
                     event.consume();
                 }
             }
         } else if (event.getButton() == MouseButton.SECONDARY) {
-            // Right-click to remove plant
             gameBoard.removePlantAt(boardX, boardY);
             event.consume();
         }
     }
 
     private void handleKeyPressed(javafx.scene.input.KeyEvent event) {
-        // Chỉ cho phép chọn zombie nếu là màn Custom (Level 6) hoặc đang bật Debug Mode
         boolean isCustomLevel = gameBoard.getLevelConfig() != null && gameBoard.getLevelConfig().getLevelNumber() == 6;
         if (!isCustomLevel && !gameBoard.isDebugMode()) {
             return;
@@ -908,6 +913,11 @@ public class GameCanvas extends Canvas {
                     success = gameBoard.removePlantAt(boardX, boardY);
                 } else {
                     Plant newPlant = createPlantFromType(db.getString());
+                    if (newPlant != null && gameBoard.getSun() < newPlant.getCost()) {
+                        showSunMessage(event.getX(), event.getY());
+                        event.setDropCompleted(false);
+                        return;
+                    }
                     if (newPlant != null && gameBoard.plantAt(newPlant, gridX, gridY)) {
                         success = true;
                     }

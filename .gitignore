@@ -2,6 +2,7 @@
 /bin/
 /target/
 /*.class
+progress.txt
 
 # IDE files
 /.idea/

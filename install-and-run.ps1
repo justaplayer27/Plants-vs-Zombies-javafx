@@ -1,5 +1,4 @@
-# JavaFX SDK Installer and Game Launcher for Plants vs Zombies
-# Run this script in PowerShell on Windows
+# JavaFX SDK Installer and Game Launcher
 
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Continue'
@@ -43,12 +42,9 @@ if (Test-Path $JAVAFX_HOME) {
         Write-Host "Extracting archive..." -ForegroundColor Cyan
         try {
             Expand-Archive -Path $TEMP_ZIP -DestinationPath "C:\" -Force
-            
-            # Rename if needed
             if (Test-Path "C:\javafx-sdk-21.0.2") {
                 Rename-Item -Path "C:\javafx-sdk-21.0.2" -NewName $JAVAFX_HOME -Force
             }
-            
             Remove-Item $TEMP_ZIP -ErrorAction SilentlyContinue
             Write-Host "JavaFX installed successfully!" -ForegroundColor Green
         } catch {
@@ -80,12 +76,10 @@ if (-not (Test-Path $projectDir)) {
     $projectDir = Get-Location
 }
 
-# Create bin directory
 if (-not (Test-Path "$projectDir\bin")) {
     New-Item -ItemType Directory -Path "$projectDir\bin" | Out-Null
 }
 
-# Compile Java files
 $javaFiles = Get-ChildItem -Recurse -Filter "*.java" -Path "$projectDir\src\main\java"
 $errors = 0
 
@@ -119,7 +113,6 @@ Write-Host "Launching Plants vs Zombies" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 
-# Run the game
 & java --module-path "$JAVAFX_HOME\lib" `
        --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.media `
        -cp "$projectDir\bin" `

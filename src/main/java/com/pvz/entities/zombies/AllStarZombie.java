@@ -10,7 +10,7 @@ public class AllStarZombie extends Zombie {
     private double normalSpeed;
 
     public AllStarZombie(double x, double y) {
-        super(x, y, 40, 60, HEALTH, 0.15, 30, 60); // Bắt đầu với tốc độ cao (0.15)
+        super(x, y, 40, 60, HEALTH, 0.6, 30, 60); // Bắt đầu với tốc độ cao (0.15)
         this.normalSpeed = 0.05;
     }
 

@@ -1,6 +1,6 @@
 package com.pvz.entities.zombies;
 
-import com.pvz.entities.Chicken;
+import com.pvz.entities.zombies.Chicken;
 import com.pvz.game.GameBoard;
 
 public class ChickenWranglerZombie extends Zombie {
@@ -8,11 +8,11 @@ public class ChickenWranglerZombie extends Zombie {
     private int chickensSpawnedCount = 0;
     private int chickensToSpawn = 0;
     private long lastSpawnTime = 0;
-    private static final long SPAWN_DELAY = 600; // Khoảng cách giữa mỗi lần sinh gà (0.6s)
+    private static final long SPAWN_DELAY = 600;
     private boolean releasingStarted = false;
 
     public ChickenWranglerZombie(double x, double y) {
-        super(x, y, 40, 60, HEALTH, 0.045, 20, 35);
+        super(x, y, 40, 60, HEALTH, 0.1, 20, 35);
     }
 
     @Override
@@ -21,14 +21,12 @@ public class ChickenWranglerZombie extends Zombie {
             return;
         }
 
-        // Nếu đang trong quá trình giải phóng gà, zombie đứng yên
         if (chickensToSpawn > 0) {
             if (System.currentTimeMillis() - lastSpawnTime > SPAWN_DELAY) {
                 spawnOneChicken();
                 chickensToSpawn--;
                 lastSpawnTime = System.currentTimeMillis();
             }
-            // Không gọi super.update() để dừng hoàn toàn việc di chuyển và ăn cây
             return; 
         }
         super.update();
@@ -73,9 +71,9 @@ public class ChickenWranglerZombie extends Zombie {
     private void startReleasingChickens() {
         if (!releasingStarted) {
             releasingStarted = true;
-            chickensToSpawn = 4; // Đặt hàng đợi sinh 4 con gà
-            speed *= 1.5; // Tăng tốc độ di chuyển ngay khi bung gà
-            lastSpawnTime = 0; // Đảm bảo con gà đầu tiên sinh ra ngay lập tức
+            chickensToSpawn = 4;
+            speed *= 1.5;
+            lastSpawnTime = 0;
         }
     }
 
@@ -83,8 +81,8 @@ public class ChickenWranglerZombie extends Zombie {
         GameBoard board = GameBoard.getInstance();
         if (board != null) {
             Chicken chicken = new Chicken(this.getX() - 10, this.getY() + 20);
-            board.addZombie(chicken); // Thêm vào danh sách zombie để tự động có logic tấn công và thanh máu
-            board.addChicken(chicken); // Giữ lại danh sách riêng cho SpikeWeed và độ tương thích cũ
+            board.addZombie(chicken);
+            board.addChicken(chicken);
             chickensSpawnedCount++;
         }
     }
@@ -93,7 +91,9 @@ public class ChickenWranglerZombie extends Zombie {
         return chickensToSpawn > 0;
     }
 
-
+    public boolean hasReleasingStarted() {
+        return releasingStarted;
+    }
 
     @Override
     public String toString() {

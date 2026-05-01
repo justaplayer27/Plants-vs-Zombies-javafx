@@ -27,13 +27,11 @@ public class SpikeWeed extends Plant {
         double plantX = getX();
         boolean hitAny = false;
 
-        // Thu thập tất cả zombie trong hàng để gây sát thương AOE
         List<Zombie> targets = new ArrayList<>(board.getZombies());
 
         for (Zombie zombie : targets) {
             int zombieRow = (int) (zombie.getY() / GameBoard.getCellHeight());
             if (myRow == zombieRow) {
-                // Kiểm tra nếu zombie nằm trong phạm vi gây sát thương của Gai
                 if (zombie.getX() >= plantX - cellWidth * 0.8 && zombie.getX() <= plantX + cellWidth * 1.5) {
                     zombie.takeBelowDamage(DAMAGE);
                     hitAny = true;
@@ -41,7 +39,6 @@ public class SpikeWeed extends Plant {
             }
         }
 
-        // Nếu có ít nhất một mục tiêu bị trúng đòn, kích hoạt cooldown
         if (hitAny) {
             action();
         }

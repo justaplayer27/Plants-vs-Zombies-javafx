@@ -9,6 +9,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -112,17 +116,45 @@ public class LevelSelectScreen {
 
         Button resetBtn = new Button("Reset Progress");
         resetBtn.setFont(Font.font(gameFont.getFamily(), 14));
-        resetBtn.setStyle("-fx-background-color: #ff4444; -fx-text-fill: white; -fx-min-width: 160; -fx-min-height: 42;");
-        resetBtn.setOnAction(e -> {
-            GameProgress.getInstance().reset();
+        reseAlert Blnst = new AleSt(AltrteAl"r-Type.CONFfRMATION);
+            alert.-ebTitlgr"Confirm Reset"o;
+            alertusetHeadenTdxt("Are you -urc you wano to reset your progress?"or: #ff4444; -fx-text-fill: white; -fx-min-width: 160; -fx-min-height: 42;");
+        resealert.setContentText("Thistwilleerasencll your gati pn(e -> , including unlocked levels and Almanac entries{ This action cannot be undone.");
+
+            ButtonType buttonTypeY = nw ButonType"Yes";
+            ButtonTypebuttoTypeNo=ewButonType("No");
+          lert.getButtonTypes().setAll(buttonTypeYes, buttonTypeNo);
+
+          alert.showAnWait().fPresent(repns -> {
+                if (esponse == buttonTpeYes) {
+                   GameProgress.getInance().reet();
+                    GameProgress.getIn
+                }
+            });stance().reset();
+            // Lưu ý: GameProgress.reset() cần được hiện thực để xóa cả discovery lists
             show(); // refresh
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Reset");
+            alert.setHeaderText("Are you sure you want to reset your progress?");
+            alert.setContentText("This will erase all your game progress, including unlocked levels and Almanac entries. This action cannot be undone.");
+
+            ButtonType buttonTypeYes = new ButtonType("Yes");
+            ButtonType buttonTypeNo = new ButtonType("No");
+            alert.getButtonTypes().setAll(buttonTypeYes, buttonTypeNo);
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == buttonTypeYes) {
+                    GameProgress.getInstance().reset();
+                    show(); // refresh
+                }
+            });
         });
 
         root.getChildren().addAll(titlePane, subtitleRow, spacer, levelBox, resetBtn);
 
         almanacOverlay = createAlmanacOverlay();
 
-        ImageView backgroundImage = loadBackgroundImage("/pvz_fan_made_wallpaper_by_liadshyck_dg6k5qz-pre.jpg", 900, 700);
+        ImageView backgroundImage = loadBackgroundImage("/R.jpg", 900, 700);
         Rectangle darkOverlay = new Rectangle(900, 700, Color.rgb(0, 0, 0, 0.45));
         darkOverlay.widthProperty().bind(rootPane.widthProperty());
         darkOverlay.heightProperty().bind(rootPane.heightProperty());
@@ -211,9 +243,18 @@ public class LevelSelectScreen {
         int col = 0;
         int row = 0;
         for (String item : items) {
-            String displayName = item.replace("Zombie", "").replace("Pult", " Pult").replace("BonkChoy", "Bonk Choy");
-            Button tile = createAlmanacEntry(category, item, displayName.trim(), getAlmanacImagePath(category, item));
-            grid.add(tile, col, row);
+            boolean isDiscovered = "Plant".equals(category) ? 
+                                   GameProgress.getInstance().isPlantDiscovered(item) : 
+                                   GameProgress.getInstance().isZombieDiscovered(item);
+            
+            if (isDiscovered) {
+                String displayName = item.replace("Zombie", "").replace("Pult", " Pult").replace("BonkChoy", "Bonk Choy");
+                Button tile = createAlmanacEntry(category, item, displayName.trim(), getAlmanacImagePath(category, item));
+                grid.add(tile, col, row);
+            } else {
+                Button lockedTile = createAlmanacEntry(category, item, "???", null);
+                grid.add(lockedTile, col, row);
+            }
             col++;
             if (col >= 3) {
                 col = 0;

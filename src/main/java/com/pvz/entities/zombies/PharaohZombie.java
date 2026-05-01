@@ -11,7 +11,7 @@ public class PharaohZombie extends Zombie {
     private static final long ARMOR_BREAK_DURATION = 1200;
 
     public PharaohZombie(double x, double y) {
-        super(x, y, 40, 60, BASE_HEALTH, 0.17, 28, 35);
+        super(x, y, 40, 60, BASE_HEALTH, 0.1, 28, 35);
         this.armorHealth = ARMOR_HEALTH;
         this.armorBroken = false;
         this.armorBreakAnim = false;

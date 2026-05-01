@@ -10,7 +10,7 @@ import com.pvz.entities.BonkChoy;
 import com.pvz.entities.Pea;
 import com.pvz.entities.Sun;
 import com.pvz.entities.Mower;
-import com.pvz.entities.Chicken;
+import com.pvz.entities.zombies.Chicken;
 import com.pvz.entities.zombies.*;
 import java.util.*;
 
@@ -19,8 +19,8 @@ public class GameBoard {
     private static final int GRID_WIDTH = 9;
     private static final int GRID_HEIGHT = 5;
     private static final int CELL_WIDTH = 95;
-    private static final int CELL_HEIGHT = 113; // Bạn có thể chỉnh chiều cao ô tại đây
-    private static final int ZOMBIE_SPAWN_OFFSET = 120; // Khoảng cách ban đầu ngoài lề phải của bàn chơi
+    private static final int CELL_HEIGHT = 113;
+    private static final int ZOMBIE_SPAWN_OFFSET = 120;
 
     private List<Plant> plants;
     private List<Zombie> zombies;
@@ -74,7 +74,6 @@ public class GameBoard {
         lastSunSpawnTime = System.currentTimeMillis();
         initMowers();
 
-        // Tự động bật Debug Mode cho màn Custom (Level 6)
         if (config != null && config.getLevelNumber() == 6) {
             this.debugMode = true;
         }
@@ -89,7 +88,6 @@ public class GameBoard {
             return false;
         }
 
-        // Check if position is occupied by another plant in the same grid cell
         for (Plant p : plants) {
             int existingGridX = (int) (p.getX() / CELL_WIDTH);
             int existingGridY = (int) (p.getY() / CELL_HEIGHT);
@@ -162,7 +160,6 @@ public class GameBoard {
     public void update() {
         if (gameOver) return;
 
-        // Update plants and make them act when they have a target
         for (Plant plant : new ArrayList<>(plants)) {
             plant.update();
             
@@ -181,7 +178,6 @@ public class GameBoard {
             }
         }
 
-        // Update zombies
         for (Zombie zombie : new ArrayList<>(zombies)) {
             zombie.update();
 
@@ -307,7 +303,6 @@ public class GameBoard {
         if ("FlagZombie".equals(type)) {
             flagSpawnedThisWave = true;
         }
-        // Chỉ kích hoạt thông báo Zombie mới nếu KHÔNG ở chế độ Debug/Custom
         if (!sessionDiscoveredZombies.contains(type) && !debugMode) {
             lastNewZombieType = type;
             sessionDiscoveredZombies.add(type);

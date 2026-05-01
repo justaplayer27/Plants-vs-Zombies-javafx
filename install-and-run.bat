@@ -1,6 +1,4 @@
 @echo off
-REM Automated JavaFX SDK Download and Installation
-
 setlocal enabledelayedexpansion
 
 set JAVAFX_HOME=C:\javafx-sdk
@@ -19,7 +17,6 @@ echo.
 echo Downloading JavaFX SDK (this may take a minute)...
 echo.
 
-REM Try multiple download methods
 powershell -NoProfile -Command "^
     $ProgressPreference = 'SilentlyContinue'; ^
     $urls = @( ^

@@ -76,25 +76,21 @@ public class GameWindow {
 
     private void setupUI() {
         gameFont = loadPvZFont(16);
-        // Main container for game and HUD
         StackPane gameContainer = new StackPane();
 
-        // 1. The World (Canvas)
         gameCanvas = new GameCanvas(gameBoard);
 
-        // 2. HUD Layers (Top and Bottom)
         HBox topPanel = createTopPanel();
-        topPanel.setPickOnBounds(false); // Allow clicking through to canvas
+        topPanel.setPickOnBounds(false);
         StackPane.setAlignment(topPanel, Pos.TOP_LEFT);
 
         VBox sidePanel = createSidePanel();
-        sidePanel.setPickOnBounds(false); // Allow clicking through to canvas
+        sidePanel.setPickOnBounds(false);
         sidePanel.setMaxWidth(160);
         StackPane.setAlignment(sidePanel, Pos.CENTER_LEFT);
 
         gameContainer.getChildren().addAll(gameCanvas, topPanel, sidePanel);
 
-        // Create StackPane to hold game and overlay
         rootPane = new StackPane();
         gameContainer.setPickOnBounds(false);
         
@@ -105,7 +101,7 @@ public class GameWindow {
         gameCanvas.widthProperty().bind(rootPane.widthProperty());
         gameCanvas.heightProperty().bind(rootPane.heightProperty());
 
-        Scene scene = new Scene(rootPane, 800, 650); // Slightly increased height for better UI clearance
+        Scene scene = new Scene(rootPane, 800, 650);
         primaryStage.setTitle("Plants vs Zombies - Level " + (levelConfig != null ? levelConfig.getLevelNumber() : 1));
         primaryStage.setScene(scene);
         scene.addEventHandler(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
@@ -214,11 +210,10 @@ public class GameWindow {
     private HBox createTopPanel() {
         HBox topPanel = new HBox(20);
         topPanel.setPadding(new Insets(10));
-        topPanel.setStyle("-fx-background-color: transparent;"); // Transparent background
+        topPanel.setStyle("-fx-background-color: transparent;");
         topPanel.setMaxHeight(100);
 
         VBox leftPanel = new VBox(5);
-        // Thiết kế lại UI hiển thị Sun: Icon bên trái, số bên phải với nền đen mờ
         HBox sunContainer = new HBox(5);
         sunContainer.setAlignment(Pos.CENTER_LEFT);
         ImageView sunIcon = loadButtonGraphic("/Sun_PvZ2.png", 35, 35);
@@ -270,7 +265,6 @@ public class GameWindow {
         notificationBtn.setVisible(false);
         notificationBtn.setOnAction(e -> showEntityInfoCard((String)notificationBtn.getUserData()));
 
-        // Thêm một spacer để đẩy nút pause sang bên phải
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -280,15 +274,14 @@ public class GameWindow {
 
     private VBox createSidePanel() {
         VBox sidePanel = new VBox(10);
-        sidePanel.setPadding(new Insets(80, 10, 10, 10)); // Giảm padding để cân đối với Sun Label
+        sidePanel.setPadding(new Insets(80, 10, 10, 10));
         sidePanel.setStyle("-fx-background-color: transparent;"); 
 
-        VBox plantSelector = new VBox(2); // Sát nhau chỉ 2px
+        VBox plantSelector = new VBox(2);
         
         java.util.List<String> allowedPlants = levelConfig != null ? levelConfig.getAvailablePlantTypes() : 
                 java.util.Arrays.asList("Peashooter", "Sunflower", "Wallnut", "SpikeWeed", "KernelPult", "BonkChoy");
 
-        // Always start with Peashooter and Sunflower
         Button peashooterBtn = createPlantButton("", "/PeashooterSeedPacketPvZ2C.png", "Peashooter", () -> new Peashooter(0, 0));
         plantSelector.getChildren().add(peashooterBtn);
 
@@ -421,6 +414,7 @@ public class GameWindow {
 
         switch (category) {
             case "Plant":
+                GameProgress.getInstance().discoverPlant(type);
                 titleText = type;
                 switch (type) {
                     case "Peashooter":
@@ -460,6 +454,7 @@ public class GameWindow {
                 }
                 break;
             default:
+                GameProgress.getInstance().discoverZombie(type);
                 switch(type) {
                     case "BasicZombie":
                         imagePath = "/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking.gif";
@@ -619,7 +614,6 @@ public class GameWindow {
 
                 if (!isPaused && !gameBoard.isGameOver()) {
                     long elapsedNanos = now - lastUpdate;
-                    // Tăng độ nhạy: Cập nhật logic mỗi 16ms (60 FPS) thay vì 50ms (20 FPS)
                     if (elapsedNanos >= 16_666_666L) {
                         gameBoard.update();
                         lastUpdate = now;
@@ -651,7 +645,6 @@ public class GameWindow {
             int currentLevel = levelConfig != null ? levelConfig.getLevelNumber() : 1;
             String status = "LEVEL " + currentLevel + " CLEARED!";
             
-            // Xác định cây mới mở khóa dựa trên màn chơi vừa hoàn thành
             String unlockMsg = "";
             switch (currentLevel) {
                 case 1: unlockMsg = "\nNEW PLANT: Wallnut!"; break;
@@ -688,7 +681,6 @@ public class GameWindow {
     }
 
     private void updateLabels() {
-        // Đã chạy trong AnimationTimer nên không cần Platform.runLater
         sunLabel.setText(String.valueOf(gameBoard.getSun()));
         waveLabel.setText("Wave: " + gameBoard.getWave());
     }
