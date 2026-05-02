@@ -260,7 +260,7 @@ public class GameCanvas extends Canvas {
                     0, 0, canvasW, canvasH);
         }
 
-        drawGrid();
+        // drawGrid();
         drawDragHighlight();
 
         for (Mower mower : gameBoard.getMowers()) {
@@ -383,22 +383,22 @@ public class GameCanvas extends Canvas {
         }
     }
 
-    private void drawGrid() {
-        gc.setStroke(Color.rgb(255, 255, 255, 0.3));
-        gc.setLineWidth(1);
+    // private void drawGrid() {
+    //     gc.setStroke(Color.rgb(255, 255, 255, 0.3));
+    //     gc.setLineWidth(1);
         
-        int cellWidth = GameBoard.getCellWidth();
-        int cellHeight = GameBoard.getCellHeight();
-        int width = GameBoard.getGridWidth();
-        int height = GameBoard.getGridHeight();
+    //     int cellWidth = GameBoard.getCellWidth();
+    //     int cellHeight = GameBoard.getCellHeight();
+    //     int width = GameBoard.getGridWidth();
+    //     int height = GameBoard.getGridHeight();
 
-        for (int i = 0; i <= width; i++) {
-            gc.strokeLine(tx(i * cellWidth), ty(0), tx(i * cellWidth), ty(height * cellHeight));
-        }
-        for (int i = 0; i <= height; i++) {
-            gc.strokeLine(tx(0), ty(i * cellHeight), tx(width * cellWidth), ty(i * cellHeight));
-        }
-    }
+    //     for (int i = 0; i <= width; i++) {
+    //         gc.strokeLine(tx(i * cellWidth), ty(0), tx(i * cellWidth), ty(height * cellHeight));
+    //     }
+    //     for (int i = 0; i <= height; i++) {
+    //         gc.strokeLine(tx(0), ty(i * cellHeight), tx(width * cellWidth), ty(i * cellHeight));
+    //     }
+    // }
 
     private double tx(double x) {
         return x + gridOffsetX;

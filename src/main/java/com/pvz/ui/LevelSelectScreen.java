@@ -24,7 +24,7 @@ import java.util.Set;
 import com.pvz.game.GameProgress;
 import com.pvz.game.LevelConfig;
 
-public class LevelSelectScreen {
+public class LevelSelectScreen implements GameScreen {
     private Stage primaryStage;
     private StackPane almanacOverlay;
     private VBox almanacInfoContent;
@@ -35,6 +35,7 @@ public class LevelSelectScreen {
         this.primaryStage = primaryStage;
     }
 
+    @Override
     public void show() {
         StackPane rootPane = new StackPane();
 
@@ -481,5 +482,10 @@ Button resetBtn = new Button("Reset Progress");
         LevelConfig config = LevelConfig.getLevel(level);
         GameWindow gameWindow = new GameWindow(primaryStage, config);
         gameWindow.show();
+    }
+
+    @Override
+    public void close() {
+        primaryStage.close();
     }
 }

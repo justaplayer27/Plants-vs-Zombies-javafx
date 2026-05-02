@@ -39,7 +39,7 @@ import com.pvz.entities.KernelPult;
 import com.pvz.entities.BonkChoy;
 import com.pvz.entities.zombies.*;
 
-public class GameWindow {
+public class GameWindow implements GameScreen {
     private Stage primaryStage;
     private GameBoard gameBoard;
     private GameCanvas gameCanvas;
@@ -238,12 +238,15 @@ pauseButton = new Button("||");
         pauseButton.setOnAction(e -> togglePause());
 
 // Free Plant button (for custom/test levels)
-        freePlantBtn = new Button("Free plant mode: OFF");
-        freePlantBtn.setFont(Font.font(gameFont.getFamily(), 14));
-        freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160;");
-        freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160; " +
-                             "-fx-font-family: '" + gameFont.getFamily() + "'; -fx-font-size: 14;");
-        freePlantBtn.setOnAction(e -> toggleFreePlantMode());
+        boolean freePlantAllowed = levelConfig != null && levelConfig.getLevelNumber() == 6;
+        if (freePlantAllowed) {
+            freePlantBtn = new Button("Free plant mode: OFF");
+            freePlantBtn.setFont(Font.font(gameFont.getFamily(), 14));
+            freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160;");
+            freePlantBtn.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 160; " +
+                                 "-fx-font-family: '" + gameFont.getFamily() + "'; -fx-font-size: 14;");
+            freePlantBtn.setOnAction(e -> toggleFreePlantMode());
+        }
 
         Button shovelBtn = new Button();
         ImageView shovelIcon = loadButtonGraphic("/111px-Shovel2.png", 35, 35);
@@ -279,8 +282,16 @@ pauseButton = new Button("||");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-topPanel.getChildren().addAll(leftPanel, notificationBtn, spacer, shovelBtn, freePlantBtn, pauseButton);
+        if (freePlantBtn != null) {
+            topPanel.getChildren().addAll(leftPanel, notificationBtn, spacer, shovelBtn, freePlantBtn, pauseButton);
+        } else {
+            topPanel.getChildren().addAll(leftPanel, notificationBtn, spacer, shovelBtn, pauseButton);
+        }
         return topPanel;
+    }
+
+    private boolean isFreePlantAllowed() {
+        return levelConfig != null && levelConfig.getLevelNumber() == 6;
     }
 
     private VBox createSidePanel() {
@@ -701,6 +712,9 @@ private void toggleFullscreen() {
     }
     
 private void toggleFreePlantMode() {
+        if (!isFreePlantAllowed()) {
+            return;
+        }
         isFreePlantMode = !isFreePlantMode;
         if (isFreePlantMode) {
             freePlantBtn.setText("Free plant mode: ON");
@@ -717,8 +731,14 @@ private void toggleFreePlantMode() {
         }
     }
 
+    @Override
     public void show() {
         primaryStage.show();
+    }
+
+    @Override
+    public void close() {
+        primaryStage.close();
     }
     
 }
