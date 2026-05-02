@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class SpikeWeed extends Plant {
-    public static final int COST = 125;
+    public static final int COST = 100;
     public static final int HEALTH = 40;
     public static final long COOLDOWN = 900;
     public static final int DAMAGE = 15;

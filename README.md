@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Plants vs Zombies Java
 
 A simple Plants vs Zombies game built using JavaFX.
@@ -39,3 +40,7 @@ To preserve the source code and necessary scripts to run the game on a new Windo
 - `install-and-run.ps1` — PowerShell alternative.
 - `src/` — Source code.
 - `pom.xml` — Maven configuration.
+=======
+# Plants-vs-Zombies-javafx
+ A Plants vs Zombies clone built with Java &amp; JavaFX
+>>>>>>> 8bcadfecbdc4208b0912c53bcb3a94cffc61760d

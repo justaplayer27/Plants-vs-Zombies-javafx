@@ -4,7 +4,7 @@ import com.pvz.game.GameBoard;
 import com.pvz.entities.zombies.Zombie;
 
 public class KernelPult extends Plant {
-    public static final int COST = 175;
+    public static final int COST = 100;
     public static final int HEALTH = 35;
     public static final long COOLDOWN = 1600; // Trở về tốc độ bắn bình thường
     public static final int DAMAGE = 12;
