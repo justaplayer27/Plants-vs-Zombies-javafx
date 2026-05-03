@@ -9,6 +9,7 @@ public class PlantsVsZombiesApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        System.setProperty("prism.allowhidpi", "false"); 
         GameScreen currentScreen = new LevelSelectScreen(primaryStage);
         currentScreen.show();
     }

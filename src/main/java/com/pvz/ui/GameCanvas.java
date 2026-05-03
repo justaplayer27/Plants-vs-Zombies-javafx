@@ -87,7 +87,7 @@ public class GameCanvas extends Canvas {
     private Image excavatorZombieDeath;
     private Image pharaohWalkingArmor;
     private Image pharaohEatingArmor;
-    private Image pharaohArmorDestroyed;
+private Image pharaohArmorDestroyed;
     private Image pharaohWalkingNoArmor;
     private Image pharaohEatingNoArmor;
     private Image pharaohDeath;
@@ -139,7 +139,7 @@ public class GameCanvas extends Canvas {
             bonkChoyIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Idle - 2.gif", 110, 130);
             bonkChoyAttackFront = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack.gif", 150, 130);
             bonkChoyFinisherFront = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack - 4.gif", 150, 130);
-            bonkChoyAttackBack = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack - 2.gif", 150, 130);
+bonkChoyAttackBack = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack - 2.gif", 150, 130);
             bonkChoyFinisherBack = loadImage("/Mobile - Plants vs. Zombies 2 - Bonk Choy - Attack - 5.gif", 150, 130);
 
             basicZombieIdle = loadImage("/Mobile - Plants vs. Zombies 2 - Basic Zombie - Walking.gif", 200, 216);
@@ -164,7 +164,7 @@ public class GameCanvas extends Canvas {
             chickenWranglerZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Chicken Wrangler Zombie - Death.gif", 140, 190);
             excavatorZombieDeath = loadImage("/Mobile - Plants vs. Zombies 2 - Excavator Zombie - Death.gif", 140, 180);
             pharaohWalkingArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Walking - Sarcophagus.gif", 182, 234);
-            pharaohEatingArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Eating - Sarcophagus.gif", 182, 234);
+pharaohEatingArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Eating - Sarcophagus.gif", 182, 234);
             pharaohArmorDestroyed = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Destroyed - Sarcophagus.gif", 700, 900);
             pharaohWalkingNoArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Walking.gif", 168, 216);
             pharaohEatingNoArmor = loadImage("/Mobile - Plants vs. Zombies 2 - Pharaoh Zombie - Eating.gif", 168, 216);
@@ -208,7 +208,7 @@ public class GameCanvas extends Canvas {
             if (is != null) {
                 Image image;
                 if (requestedWidth > 0 || requestedHeight > 0) {
-                    image = new Image(is, requestedWidth, requestedHeight, true, true, false);
+                    image = new Image(is);
                 } else {
                     image = new Image(is);
                 }
@@ -232,7 +232,7 @@ public class GameCanvas extends Canvas {
 
     public void render() {
         int cellWidth = GameBoard.getCellWidth();
-        int cellHeight = GameBoard.getCellHeight();
+int cellHeight = GameBoard.getCellHeight();
         int gridWidth = GameBoard.getGridWidth() * cellWidth;
         int gridHeight = GameBoard.getGridHeight() * cellHeight;
         double canvasW = getWidth();
@@ -312,7 +312,7 @@ public class GameCanvas extends Canvas {
     private void drawZombieSelectionBar() {
         double barWidth = debugZombies.length * 80 + 20;
         double barX = (getWidth() - barWidth) / 2;
-        double barY = getHeight() - 95; // Đặt ở gần sát mép dưới
+double barY = getHeight() - 95; // Đặt ở gần sát mép dưới
 
         // Vẽ nền cho thanh công cụ
         gc.setFill(Color.rgb(40, 40, 40, 0.8));
@@ -393,7 +393,7 @@ public class GameCanvas extends Canvas {
     //     int height = GameBoard.getGridHeight();
 
     //     for (int i = 0; i <= width; i++) {
-    //         gc.strokeLine(tx(i * cellWidth), ty(0), tx(i * cellWidth), ty(height * cellHeight));
+//         gc.strokeLine(tx(i * cellWidth), ty(0), tx(i * cellWidth), ty(height * cellHeight));
     //     }
     //     for (int i = 0; i <= height; i++) {
     //         gc.strokeLine(tx(0), ty(i * cellHeight), tx(width * cellWidth), ty(i * cellHeight));
@@ -455,8 +455,7 @@ public class GameCanvas extends Canvas {
 
             gc.fillRect(tx(plant.getX() + offsetX), ty(baseY), plant.getWidth(), plant.getHeight());
         }
-
-        drawHealthBar(plant, offsetX, plant instanceof SpikeWeed ? 0 : offsetY + plantShift);
+drawHealthBar(plant, offsetX, plant instanceof SpikeWeed ? 0 : offsetY + plantShift);
     }
 
     private Image getPlantImage(Plant plant) {
@@ -519,8 +518,7 @@ public class GameCanvas extends Canvas {
         double shadowWidth = zombie.getWidth() * 1.5;
         double shadowHeight = 14;
         double zombieBottomY = zombie.getY() + offsetY + zombie.getHeight() + zombieShadowShift;
-        
-        javafx.scene.paint.RadialGradient shadowGradient = new javafx.scene.paint.RadialGradient(
+javafx.scene.paint.RadialGradient shadowGradient = new javafx.scene.paint.RadialGradient(
             0, 0, 0.6, 0.6, 0.45, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
             new javafx.scene.paint.Stop(0, Color.rgb(0, 0, 0, 0.55)),
             new javafx.scene.paint.Stop(1, Color.TRANSPARENT)
@@ -575,8 +573,7 @@ public class GameCanvas extends Canvas {
         if (zombie.isStunned() && butterOverlayImage != null) {
             gc.drawImage(butterOverlayImage, tx(zombie.getX() + 10 + zombieVisualXOffset), ty(zombie.getY() + vOffsetY - 10), zombie.getWidth() * 1.5, zombie.getWidth() * 1.5);
         }
-
-        String type = "Basic";
+String type = "Basic";
         if (zombie instanceof FlagZombie) type = "Flag";
         else if (zombie instanceof AllStarZombie) type = "AllStar";
         else if (zombie instanceof ChickenWranglerZombie) type = "Chicken";
@@ -634,8 +631,7 @@ public class GameCanvas extends Canvas {
 
         return basicZombieIdle;
     }
-
-    private void showSunMessage(double x, double y) {
+private void showSunMessage(double x, double y) {
         this.sunMessage = "Not enough sun!";
         this.sunMsgX = x;
         this.sunMsgY = y;
@@ -701,7 +697,7 @@ public class GameCanvas extends Canvas {
         else if (entity instanceof BonkChoy) maxHealth = BonkChoy.HEALTH;
         else if (entity instanceof Chicken) maxHealth = Chicken.MAX_HEALTH;
         else if (entity instanceof Zombie) {
-            if (entity instanceof BasicZombie) {
+if (entity instanceof BasicZombie) {
                 maxHealth = BasicZombie.HEALTH;
             } else if (entity instanceof FlagZombie) {
                 maxHealth = FlagZombie.HEALTH;
@@ -778,8 +774,7 @@ public class GameCanvas extends Canvas {
         if (gameBoard.isPaused()) {
             return;
         }
-
-        // Kiểm tra xem có click vào thanh chọn Zombie hay không
+// Kiểm tra xem có click vào thanh chọn Zombie hay không
         if (gameBoard.isDebugMode() || (gameBoard.getLevelConfig() != null && gameBoard.getLevelConfig().getLevelNumber() == 6)) {
             double barWidth = debugZombies.length * 80 + 20;
             double barX = (getWidth() - barWidth) / 2;
@@ -827,8 +822,10 @@ public class GameCanvas extends Canvas {
             }
 
             if (selectedZombieType != null) {
+                double spawnX = gridX * GameBoard.getCellWidth();
+                spawnX = Math.max(0, Math.min(spawnX, GameBoard.getGridWidth() * GameBoard.getCellWidth() - 1));
                 double spawnY = gridY * GameBoard.getCellHeight() + 10;
-                gameBoard.addZombie(gameBoard.spawnZombieByType(selectedZombieType, boardX, spawnY));
+                gameBoard.addZombie(gameBoard.spawnZombieByType(selectedZombieType, spawnX, spawnY));
                 event.consume();
                 return;
             }
@@ -843,7 +840,7 @@ public class GameCanvas extends Canvas {
                 if (gameBoard.plantAt(newPlant, gridX, gridY)) {
                     setSelectedPlant(null);
                     event.consume();
-                }
+}
             }
         } else if (event.getButton() == MouseButton.SECONDARY) {
             gameBoard.removePlantAt(boardX, boardY);
@@ -916,7 +913,7 @@ public class GameCanvas extends Canvas {
                 if ("Shovel".equals(db.getString())) {
                     success = gameBoard.removePlantAt(boardX, boardY);
                 } else {
-                    Plant newPlant = createPlantFromType(db.getString());
+Plant newPlant = createPlantFromType(db.getString());
                     if (newPlant != null && !gameBoard.isFreePlantsMode() && gameBoard.getSun() < newPlant.getCost()) {
                         showSunMessage(event.getX(), event.getY());
                         event.setDropCompleted(false);
@@ -1000,7 +997,7 @@ public class GameCanvas extends Canvas {
 
     private Plant createPlantCopy(Plant original) {
         if (original instanceof Peashooter) {
-            return new Peashooter(0, 0);
+return new Peashooter(0, 0);
         } else if (original instanceof Sunflower) {
             return new Sunflower(0, 0);
         } else if (original instanceof SpikeWeed) {
